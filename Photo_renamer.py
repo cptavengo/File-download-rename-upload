@@ -6,6 +6,9 @@ import re
 import io
 from PIL import Image
 import File_uploader
+import Input_field_check
+
+#===============================================================================
 
 def main():
     #defines layout for first window of module
@@ -30,7 +33,7 @@ def main():
             if values["-YES-"] == True and values["-NO-"] == False:
                 if values["-YES_1-"] == True and values["-NO_1-"] == False:
                     window.close()
-                    multiple_photo_folders()
+                    multiple_photo_folders(values["-NO-"])
 
                 if values["-NO_1-"] == True and values["-YES_1-"] == False:
                     if values["-YES_2-"] == False:
@@ -39,37 +42,24 @@ def main():
 
                     else:
                         window.close()
-                        multiple_photo_folders_mover()
+                        multiple_photo_folders_mover(values["-NO-"])
 
                 if values["-NO_1-"] == True and values["-YES_1-"] == True:
                     sg.popup("Please on select yes OR no.")
 
             if values["-NO-"] == True and values["-YES-"] == False:
-                print("You selected no")
-                window.close()
+                if values["-YES_1-"] == True and values["-NO_1-"] == False:
+                    window.close()
+                    multiple_photo_folders(values["-NO-"])
+
+                if values["-NO_1-"] == True and values["-YES_1-"] == False:
+                    window.close()
+                    no_photo_renamer()
 
             if values["-NO-"] == True and values["-YES-"] == True:
                 sg.popup("Please on select yes OR no.")
 
-def input_field_check(input_field):
-    """Helper function to perform input field checks against all spaces and illegal characters"""
-    #This checks to make sure that the input is not blank or spaces
-    if input_field.isspace() == True or input_field == "":
-        sg.popup("The file field cannot be empty", title = " ")
-        return True
-
-    #This checks for invalid file characters
-    if input_field.find("<") != -1 or input_field.find(">") != -1 \
-        or input_field.find(":") != -1 or input_field.find("\\") != -1 \
-        or input_field.find("/") != -1 or input_field.find("\"") != -1 \
-        or input_field.find("|") != -1 or input_field.find("?") != -1 \
-        or input_field.find("*") != -1:
-            sg.popup("The following characters cannot be used:"
-                "< > : \ / \" | ? * ")
-            return True
-
-    else:
-        return False
+#===============================================================================
 
 def mass_renamer(list_files, folder):
     layout = [
@@ -84,7 +74,7 @@ def mass_renamer(list_files, folder):
             break
 
         if event == "OK":
-            if input_field_check(values["-IN-"]) == True:
+            if Input_field_check.input_field_check(values["-IN-"]) == True:
                 pass
 
             else:
@@ -132,6 +122,28 @@ def mass_renamer(list_files, folder):
                         sg.popup("This name is already in use")
                     else:
                         sg.popup("Something screwed up")
+
+#===============================================================================
+
+def no_photo_renamer():
+    file_list = []
+    layout = [[sg.Text("Input name of source folder:")],
+    [sg.In(enable_events=True, k="-FOLDER-"), sg.FolderBrowse()],
+    [sg.Button("OK")]
+    ]
+    window = sg.Window(" ", layout)
+
+    while True:
+        event, values = window.read()
+        if event == "Exit" or event == sg.WIN_CLOSED:
+            break
+        if event == "OK":
+            window.close()
+            folder = values["-FOLDER-"]
+            file_list = os.listdir(folder)
+            File_uploader.photo_uploader(folder, file_list)
+
+#===============================================================================
 
 def photo_renamer():
     file_list = []
@@ -203,7 +215,7 @@ def photo_renamer():
             except:
                 pass
         if event == "OK":
-            if input_field_check(values["-INPUT-"]) == True:
+            if Input_field_check.input_field_check(values["-INPUT-"]) == True:
                 pass
 
             else:
@@ -257,10 +269,10 @@ def photo_renamer():
 
         if event == "Done":
             File_uploader.photo_uploader(folder, file_list)
-            #print("This function is being added soon.",
-                  #"The function may also be disabled in the script.")
 
-def multiple_photo_folders_mover():
+#===============================================================================
+
+def multiple_photo_folders_mover(NO_check_value):
     file_list_1 = []
     file_list = []
 
@@ -396,10 +408,18 @@ def multiple_photo_folders_mover():
                 window["-FILE_LIST_1-"].update(fnames_1)
 
         elif event == "Done":
-            window.close()
-            photo_renamer()
+            if NO_check_value == False:
+                window.close()
+                photo_renamer()
+            elif NO_check_value == True:
+                window.close()
+                folder = values["-FOLDER-"]
+                file_list = os.listdir(values["-FOLDER-"])
+                File_uploader.photo_uploader(folder, file_list)
 
-def multiple_photo_folders():
+#===============================================================================
+
+def multiple_photo_folders(NO_check_value):
     #define layout for folder creation Window
     layout = [[sg.Text("How many folders need to be created?"),
              sg.Input("", k="-IN-")],
@@ -431,7 +451,7 @@ def multiple_photo_folders():
                             break
 
                         if event_1 == "OK":
-                            if input_field_check(values_1["-IN_1-"]) == True:
+                            if Input_field_check.input_field_check(values_1["-IN_1-"]) == True:
                                 pass
 
                             else:
@@ -445,12 +465,16 @@ def multiple_photo_folders():
 
                                 except:
                                     sg.popup("An error has occurred")
-                multiple_photo_folders_mover()
+                multiple_photo_folders_mover(NO_check_value)
+
+#===============================================================================
 
 if __name__ == "__main__":
     main()
 
-##TO DO: add a "Done" button to final window so that function can move on to upload
+##TO DO: fix 2 crashes: trying to type in browse input field for photo_renamer function
+#causes immediate crash. Entering a valid character before selecting a photo in
+#photo_renamer function causes a crash.
 #add ability to move other file types, if desired. No photo preview would be available.
 #possibly add a file conversion or resizer ability, if desired
 #   ^ this would be good if file sizes need to be reduced to under x MB
