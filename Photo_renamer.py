@@ -12,14 +12,15 @@ import Input_field_check
 
 def main():
     #defines layout for first window of module
-    layout = [[sg.Text("Would you like to rename photos?"),
-             sg.Checkbox("Yes", key="-YES-"), sg.Checkbox("No", k="-NO-")],
-             [sg.Text("Are multiple folders needed for renaming?"),
-             sg.Checkbox("Yes", k="-YES_1-"), sg.Checkbox("No", k="-NO_1-")],
-             [sg.Text("Is multiple folder move mode needed?"),
-             sg.Checkbox("Yes", k="-YES_2-"), sg.Checkbox("No", k="-NO_2-")],
-             [sg.Button("OK")],
-             ]
+    layout = [
+        [sg.Text("Would you like to rename photos?"),
+        sg.Checkbox("Yes", key="-YES-"), sg.Checkbox("No", k="-NO-")],
+        [sg.Text("Are multiple folders needed for renaming?"),
+        sg.Checkbox("Yes", k="-YES_1-"), sg.Checkbox("No", k="-NO_1-")],
+        [sg.Text("Is multiple folder move mode needed?"),
+        sg.Checkbox("Yes", k="-YES_2-"), sg.Checkbox("No", k="-NO_2-")],
+        [sg.Button("OK")],
+    ]
 
     window = sg.Window(" ", layout)
 
@@ -50,7 +51,7 @@ def main():
             if values["-NO-"] == True and values["-YES-"] == False:
                 if values["-YES_1-"] == True and values["-NO_1-"] == False:
                     window.close()
-                    multiple_photo_folders(values["-NO-"])
+                    multiple_photo_folders(values["-NO_2-"])
 
                 if values["-NO_1-"] == True and values["-YES_1-"] == False:
                     window.close()
@@ -63,8 +64,8 @@ def main():
 
 def mass_renamer(list_files, folder):
     layout = [
-    [sg.Text("Input name to be mass labeled:")],
-    [sg.In(enable_events=True, key="-IN-"), sg.Button("OK")],
+        [sg.Text("Input name to be mass labeled:")],
+        [sg.In(enable_events=True, key="-IN-"), sg.Button("OK")],
     ]
     window = sg.Window(" ", layout)
 
@@ -74,7 +75,7 @@ def mass_renamer(list_files, folder):
             break
 
         if event == "OK":
-            if Input_field_check.input_field_check(values["-IN-"]) == True:
+            if Input_field_check.input_field_check(values["-IN-"]) == False:
                 pass
 
             else:
@@ -97,7 +98,7 @@ def mass_renamer(list_files, folder):
                                 f
                                 for f in file_list
                                 if os.path.isfile(os.path.join(folder,f))
-                                and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                                and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
 
                         else:
@@ -110,7 +111,7 @@ def mass_renamer(list_files, folder):
                                 f
                                 for f in file_list
                                 if os.path.isfile(os.path.join(folder,f))
-                                and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                                and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
 
                         count += 1
@@ -127,9 +128,10 @@ def mass_renamer(list_files, folder):
 
 def no_photo_renamer():
     file_list = []
-    layout = [[sg.Text("Input name of source folder:")],
-    [sg.In(enable_events=True, k="-FOLDER-"), sg.FolderBrowse()],
-    [sg.Button("OK")]
+    layout = [
+        [sg.Text("Select upload source folder:")],
+        [sg.In(enable_events=True, readonly=True, k="-FOLDER-"), sg.FolderBrowse()],
+        [sg.Button("OK")],
     ]
     window = sg.Window(" ", layout)
 
@@ -137,11 +139,14 @@ def no_photo_renamer():
         event, values = window.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
+
         if event == "OK":
-            window.close()
-            folder = values["-FOLDER-"]
-            file_list = os.listdir(folder)
-            File_uploader.photo_uploader(folder, file_list)
+            if values["-FOLDER-"] == "":
+                sg.popup("Please select a folder")
+            else:
+                folder = values["-FOLDER-"]
+                file_list = os.listdir(folder)
+                File_uploader.photo_uploader(folder, file_list)
 
 #===============================================================================
 
@@ -149,12 +154,14 @@ def photo_renamer():
     file_list = []
 
     #This sets up what will be on the left side of the window
-    photo_column = [[sg.Text("Select source folder for photo(s)")],
-              [sg.In(enable_events=True, key="-FOLDER-"),
-              sg.FolderBrowse()],
-              [sg.Text("Select photo(s) to rename:")],
-              [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
-              enable_events=True, size=(40,20),key="-FILE LIST-")]]
+    photo_column = [
+        [sg.Text("Select source folder for photo(s)")],
+        [sg.In(enable_events=True, readonly=True, key="-FOLDER-"),
+        sg.FolderBrowse()],
+        [sg.Text("Select photo(s) to rename:")],
+        [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
+        enable_events=True, size=(40,20),key="-FILE LIST-")],
+    ]
 
     #This sets up what will be on the right side of the window
     viewer_column = [
@@ -166,11 +173,9 @@ def photo_renamer():
 
     #This sets up the window with a vertical line seperating the two sections
     layout = [
-        [
-            sg.Column(photo_column),
-            sg.VSeperator(),
-            sg.Column(viewer_column),
-        ]
+        [sg.Column(photo_column),
+        sg.VSeperator(),
+        sg.Column(viewer_column)]
     ]
 
     #This creates the new window, finalize makes it so that it doesn't throw
@@ -192,10 +197,12 @@ def photo_renamer():
                         f
                         for f in file_list
                         if os.path.isfile(os.path.join(folder,f))
-                        and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                        and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                     ]
+
             except:
                 file_list = []
+                fnames = []
             window["-FILE LIST-"].update(fnames)
 
         elif event == "-FILE LIST-":
@@ -206,7 +213,10 @@ def photo_renamer():
                 filename = os.path.join(
                     folder, values["-FILE LIST-"][0]
                 )
-                image = Image.open(filename)
+                if filename.endswith(".pdf"):
+                    image = Image.open("No preview available.png")
+                else:
+                    image = Image.open(filename)
                 image.thumbnail((400, 400))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
@@ -236,7 +246,7 @@ def photo_renamer():
                             f
                             for f in file_list
                             if os.path.isfile(os.path.join(folder, f))
-                            and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                            and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
                         window["-FILE LIST-"].update(fnames)
 
@@ -249,14 +259,18 @@ def photo_renamer():
                             f
                             for f in file_list
                             if os.path.isfile(os.path.join(folder, f))
-                            and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                            and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
                         window["-FILE LIST-"].update(fnames)
 
                 except:
                     #exception block to verify unique names and to select a
                     #photo to begin renaming.
-                    if values["-INPUT-"] in file_list or values["-INPUT-"] + file_extension[0] in file_list:
+                    if values["-FOLDER-"] == "":
+                        sg.popup("Please select a folder for files to be renamed", title=" ")
+
+                    elif values["-INPUT-"] in file_list or values["-INPUT-"] \
+                    + file_extension[0] in file_list:
                         sg.popup("This name is already in use", title =" ")
 
                     else:
@@ -265,10 +279,16 @@ def photo_renamer():
         if event == "Mass rename":
             list_files = values["-FILE LIST-"]
             folder = values["-FOLDER-"]
-            window["-FILE LIST-"].update(mass_renamer(list_files, folder))
+            if list_files == []:
+                sg.popup("Please select photos for mass rename first")
+            else:
+                window["-FILE LIST-"].update(mass_renamer(list_files, folder))
 
         if event == "Done":
-            File_uploader.photo_uploader(folder, file_list)
+            if values["-FOLDER-"] == "":
+                sg.popup("Please select a folder")
+            else:
+                File_uploader.photo_uploader(folder, file_list)
 
 #===============================================================================
 
@@ -276,30 +296,34 @@ def multiple_photo_folders_mover(NO_check_value):
     file_list_1 = []
     file_list = []
 
-    column_1 = [[sg.Text("Select source folder")],
-                [sg.In(enable_events=True, key="-FOLDER-"),
-                sg.FolderBrowse()],
-                [sg.Text("Select photo(s) to move:")],
-                [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
-                enable_events=True, size=(40,20),key="-FILE LIST-")]]
-    column_2 = [[sg.Text("Photo preview")],
-                [sg.Image(key="-IMAGE-")],
-                [sg.Button("Move >>")]]
-    column_3 = [[sg.Text("Select destination folder")],
-                [sg.In(enable_events=True, key="-FOLDER_1-"),
-                sg.FolderBrowse()],
-                [sg.Listbox(values=file_list_1, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
-                enable_events=True, size=(40,20), key="-FILE_LIST_1-")],
-                [sg.Button("Done")]]
+    column_1 = [
+        [sg.Text("Select source folder")],
+        [sg.In(enable_events=True, readonly=True, key="-FOLDER-"),
+        sg.FolderBrowse()],
+        [sg.Text("Select photo(s) to move:")],
+        [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
+        enable_events=True, size=(40,20),key="-FILE LIST-")],
+    ]
+    column_2 = [
+        [sg.Text("Photo preview")],
+        [sg.Image(key="-IMAGE-")],
+        [sg.Button("Move >>")],
+    ]
+    column_3 = [
+        [sg.Text("Select destination folder")],
+        [sg.In(enable_events=True, readonly=True, key="-FOLDER_1-"),
+        sg.FolderBrowse()],
+        [sg.Listbox(values=file_list_1, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
+        enable_events=True, size=(40,20), key="-FILE_LIST_1-")],
+        [sg.Button("Done")],
+    ]
 
     layout = [
-        [
-            sg.Column(column_1),
-            sg.VSeperator(),
-            sg.Column(column_2),
-            sg.VSeperator(),
-            sg.Column(column_3)
-        ]
+        [sg.Column(column_1),
+        sg.VSeperator(),
+        sg.Column(column_2),
+        sg.VSeperator(),
+        sg.Column(column_3)]
     ]
     window = sg.Window(" ", layout)
 
@@ -317,8 +341,9 @@ def multiple_photo_folders_mover(NO_check_value):
                         f
                         for f in file_list
                         if os.path.isfile(os.path.join(folder,f))
-                        and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                        and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                     ]
+
             except:
                 file_list = []
             window["-FILE LIST-"].update(fnames)
@@ -331,7 +356,10 @@ def multiple_photo_folders_mover(NO_check_value):
                 filename = os.path.join(
                     folder, values["-FILE LIST-"][0]
                 )
-                image = Image.open(filename)
+                if filename.endswith(".pdf"):
+                    image = Image.open("No preview available.png")
+                else:
+                    image = Image.open(filename)
                 image.thumbnail((400, 400))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
@@ -348,7 +376,10 @@ def multiple_photo_folders_mover(NO_check_value):
                 filename = os.path.join(
                     folder_1, values["-FILE_LIST_1-"][0]
                 )
-                image = Image.open(filename)
+                if filename.endswith(".pdf"):
+                    image = Image.open("No preview available.png")
+                else:
+                    image = Image.open(filename)
                 image.thumbnail((400, 400))
                 bio = io.BytesIO()
                 image.save(bio, format = "PNG")
@@ -366,7 +397,7 @@ def multiple_photo_folders_mover(NO_check_value):
                         f_1
                         for f_1 in file_list_1
                         if os.path.isfile(os.path.join(folder_1, f_1))
-                        and f_1.lower().endswith((".png", ".jpg", ".jpeg"))
+                        and f_1.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                         ]
             except:
                 file_list_1 = []
@@ -389,7 +420,7 @@ def multiple_photo_folders_mover(NO_check_value):
                             f
                             for f in file_list
                             if os.path.isfile(os.path.join(folder,f))
-                            and f.lower().endswith((".png", ".jpg", ".jpeg"))
+                            and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                         ]
                     folder_1 = values["-FOLDER_1-"]
                     file_list_1 = os.listdir(folder_1)
@@ -398,7 +429,7 @@ def multiple_photo_folders_mover(NO_check_value):
                             f_1
                             for f_1 in file_list_1
                             if os.path.isfile(os.path.join(folder_1, f_1))
-                            and f_1.lower().endswith((".png", ".jpg", ".jpeg"))
+                            and f_1.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
                 except:
                     file_list = []
@@ -408,22 +439,26 @@ def multiple_photo_folders_mover(NO_check_value):
                 window["-FILE_LIST_1-"].update(fnames_1)
 
         elif event == "Done":
-            if NO_check_value == False:
+            if NO_check_value == True:
                 window.close()
                 photo_renamer()
-            elif NO_check_value == True:
+
+            elif NO_check_value == False:
                 window.close()
-                folder = values["-FOLDER-"]
-                file_list = os.listdir(values["-FOLDER-"])
-                File_uploader.photo_uploader(folder, file_list)
+                no_photo_renamer()
 
 #===============================================================================
 
 def multiple_photo_folders(NO_check_value):
     #define layout for folder creation Window
-    layout = [[sg.Text("How many folders need to be created?"),
-             sg.Input("", k="-IN-")],
-             [sg.Button("OK")]]
+    layout = [
+        [sg.Text("Where are folders going to be created?"),
+        sg.In("", readonly=True, k="-FOLDER-"),
+        sg.FolderBrowse()],
+        [sg.Text("How many folders need to be created?"),
+        sg.Input("", k="-IN-")],
+        [sg.Button("OK")],
+    ]
     window = sg.Window(" ", layout)
 
     while True:
@@ -435,46 +470,60 @@ def multiple_photo_folders(NO_check_value):
             if values["-IN-"].strip().isdigit() != True:
                 sg.popup("Please enter a number", title=" ")
 
+            elif values["-FOLDER-"] == "":
+                sg.popup("Please select a folder before continuing", title=" ")
+
             else:
                 window.close()
                 #for loop iterates to max value input in folders desired field
-                for folder_num in range(int(values["-IN-"])):
-                    layout_1 = [[sg.Text("Folder {} name:".format(folder_num + 1)),
-                               sg.Input("", k="-IN_1-")],
-                               [sg.Button("OK")]]
-                    window_1 = sg.Window(" ", layout_1)
-                    #creates each folder in a separate window, one at a time
-                    while True:
-                        event_1, values_1 = window_1.read()
+                if int(values["-IN-"]) == 0 and NO_check_value == False:
+                    multiple_photo_folders_mover(NO_check_value)
 
-                        if event_1 == "Exit" or event_1 == sg.WIN_CLOSED:
-                            break
+                elif int(values["-IN-"]) == 0 and NO_check_value == True:
+                    folder = values["-FOLDER-"]
+                    file_list = os.listdir(folder)
+                    File_uploader.photo_uploader(folder, file_list)
 
-                        if event_1 == "OK":
-                            if Input_field_check.input_field_check(values_1["-IN_1-"]) == True:
-                                pass
+                else:
+                    for folder_num in range(int(values["-IN-"])):
+                        layout_1 = [
+                            [sg.Text("Folder {} name:".format(folder_num + 1)),
+                            sg.Input("", k="-IN_1-")],
+                            [sg.Button("OK")],
+                        ]
+                        window_1 = sg.Window(" ", layout_1)
+                        #creates each folder in a separate window, one at a time
+                        while True:
+                            event_1, values_1 = window_1.read()
 
-                            else:
-                                try:
-                                    if values_1["-IN_1-"] in os.listdir(folder):
-                                        sg.popup("Name already in use, choose another")
+                            if event_1 == "Exit" or event_1 == sg.WIN_CLOSED:
+                                sys.exit()
 
-                                    else:
-                                        window_1.close()
-                                        os.mkdir(folder + "/" + values_1["-IN_1-"])
+                            if event_1 == "OK":
+                                if Input_field_check.input_field_check(values_1["-IN_1-"]) == True:
+                                    pass
 
-                                except:
-                                    sg.popup("An error has occurred")
-                multiple_photo_folders_mover(NO_check_value)
+                                else:
+                                    try:
+                                        folder = values["-FOLDER-"]
+                                        if values_1["-IN_1-"] in os.listdir(folder):
+                                            sg.popup("Name already in use, choose another")
+
+                                        else:
+                                            window_1.close()
+                                            os.mkdir(folder + "/" + values_1["-IN_1-"])
+                                            multiple_photo_folders_mover(NO_check_value)
+
+                                    except:
+                                        sg.popup("An error has occurred")
 
 #===============================================================================
 
 if __name__ == "__main__":
     main()
 
-##TO DO: fix 2 crashes: trying to type in browse input field for photo_renamer function
-#causes immediate crash. Entering a valid character before selecting a photo in
-#photo_renamer function causes a crash.
+##TO DO:
 #add ability to move other file types, if desired. No photo preview would be available.
+    #^added .pdf and no preview available file to support this
 #possibly add a file conversion or resizer ability, if desired
 #   ^ this would be good if file sizes need to be reduced to under x MB
