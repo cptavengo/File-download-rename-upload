@@ -55,12 +55,18 @@ def photo_uploader(folder, file_list):
                         "mimeType": "application/vnd.google-apps.folder"
                     }
                     DRIVE_FOLDER = DRIVE.files().create(body=file_metadata, fields="id").execute()
-                    print("Folder ID: {}".format(DRIVE_FOLDER.get("id")))
+                    layout_1 = [
+                        [sg.Text("Uploading files now...")],
+                        [sg.ProgressBar(len(file_list), orientation="h", size=(20,20), k="-PROG-")],
+                    ]
+                    window_1 = sg.Window(" ", layout_1)
+                    i = 1
 
                     #File upload block
                     for files in file_list:
                         if os.path.isfile(os.path.join(folder, files)) \
                         and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                            event_1, values_1 = window_1.read(timeout=10)
                             metadata = {
                                 "name": files,
                                 "parents": [DRIVE_FOLDER.get("id")]
@@ -68,8 +74,9 @@ def photo_uploader(folder, file_list):
                             file_path = folder + "/" + files
                             file = DRIVE.files().create(body=metadata, fields="id",
                             media_body=file_path, media_mime_type="Image/jpeg").execute()
-                            print("File ID: {}".format(file.get("id")))
-
+                            window_1["-PROG-"].update(i+1)
+                            i += 1
+                    window_1.close()
                 except:
                     sg.popup("Something didn't work.")
 

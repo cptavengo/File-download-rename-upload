@@ -131,7 +131,7 @@ def no_photo_renamer():
     layout = [
         [sg.Text("Select upload source folder:")],
         [sg.In(enable_events=True, readonly=True, k="-FOLDER-"), sg.FolderBrowse()],
-        [sg.Button("OK")],
+        [sg.Button("OK"), sg.Button("Exit")]
     ]
     window = sg.Window(" ", layout)
 
