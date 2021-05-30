@@ -6,7 +6,7 @@ from google.oauth2.credentials import Credentials
 import PySimpleGUI as sg
 import Input_field_check
 
-def photo_uploader(folder, file_list):
+def Cred_check(folder, file_list):
     try:
         creds = None
         SCOPES = "https://www.googleapis.com/auth/drive.file"
@@ -26,8 +26,13 @@ def photo_uploader(folder, file_list):
             with open("token.json", "w") as token:
                 token.write(creds.to_json())
 
+        Photo_uploader(folder, file_list, creds)
+
     except:
-        sg.popup("Try deleting token.json and try again.")
+        sg.popup("Deleting token.json. Try 'OK' again.")
+        os.remove("token.json")
+
+def Photo_uploader(folder, file_list, creds):
 
     DRIVE = build("drive", "v3", credentials=creds)
 
@@ -54,10 +59,20 @@ def photo_uploader(folder, file_list):
                         "name": values["-IN-"],
                         "mimeType": "application/vnd.google-apps.folder"
                     }
-                    DRIVE_FOLDER = DRIVE.files().create(body=file_metadata, fields="id").execute()
+                    DRIVE_FOLDER = DRIVE.files().create(body=file_metadata, \
+                    fields="id").execute()
+
+                    file_list_1 = []
+                    for files in file_list:
+                        if os.path.isfile(os.path.join(folder, files)) \
+                        and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                            file_list_1.append(files)
+
                     layout_1 = [
                         [sg.Text("Uploading files now...")],
-                        [sg.ProgressBar(len(file_list), orientation="h", size=(20,20), k="-PROG-")],
+                        [sg.ProgressBar(len(file_list_1), orientation="h", \
+                        size=(20,20), k="-PROG-")],
+                        [sg.Text(k="-TEXT-", size=(20,0))]
                     ]
                     window_1 = sg.Window(" ", layout_1)
                     i = 1
@@ -74,11 +89,15 @@ def photo_uploader(folder, file_list):
                             file_path = folder + "/" + files
                             file = DRIVE.files().create(body=metadata, fields="id",
                             media_body=file_path, media_mime_type="Image/jpeg").execute()
-                            window_1["-PROG-"].update(i+1)
+
+                            window_1["-PROG-"].update(i)
+                            window_1["-TEXT-"].update("{} / {} files uploaded" \
+                            .format(str(i), str(len(file_list_1))))
                             i += 1
+
+                            if event_1 == sg.WIN_CLOSED:
+                                break
+
                     window_1.close()
                 except:
                     sg.popup("Something didn't work.")
-
-if __name__ == "__main__":
-    photo_uploader()

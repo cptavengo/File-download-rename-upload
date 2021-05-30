@@ -14,11 +14,11 @@ def main():
     #defines layout for first window of module
     layout = [
         [sg.Text("Would you like to rename photos?"),
-        sg.Checkbox("Yes", key="-YES-"), sg.Checkbox("No", k="-NO-")],
+        sg.Radio("Yes", group_id=1, key="-YES-"), sg.Radio("No", group_id=1, k="-NO-")],
         [sg.Text("Are multiple folders needed for renaming?"),
-        sg.Checkbox("Yes", k="-YES_1-"), sg.Checkbox("No", k="-NO_1-")],
+        sg.Radio("Yes", group_id=2, k="-YES_1-"), sg.Radio("No", group_id=2, k="-NO_1-")],
         [sg.Text("Is multiple folder move mode needed?"),
-        sg.Checkbox("Yes", k="-YES_2-"), sg.Checkbox("No", k="-NO_2-")],
+        sg.Radio("Yes", group_id=3, k="-YES_2-"), sg.Radio("No", group_id=3, k="-NO_2-")],
         [sg.Button("OK")],
     ]
 
@@ -31,12 +31,12 @@ def main():
 
         if event == "OK":
             #defines what happens for first row of checkboxes
-            if values["-YES-"] == True and values["-NO-"] == False:
-                if values["-YES_1-"] == True and values["-NO_1-"] == False:
+            if values["-YES-"] == True:
+                if values["-YES_1-"] == True:
                     window.close()
                     multiple_photo_folders(values["-NO-"])
 
-                if values["-NO_1-"] == True and values["-YES_1-"] == False:
+                if values["-NO_1-"] == True:
                     if values["-YES_2-"] == False:
                         window.close()
                         photo_renamer()
@@ -45,20 +45,14 @@ def main():
                         window.close()
                         multiple_photo_folders_mover(values["-NO-"])
 
-                if values["-NO_1-"] == True and values["-YES_1-"] == True:
-                    sg.popup("Please on select yes OR no.")
-
-            if values["-NO-"] == True and values["-YES-"] == False:
-                if values["-YES_1-"] == True and values["-NO_1-"] == False:
+            if values["-NO-"] == True:
+                if values["-YES_1-"] == True:
                     window.close()
                     multiple_photo_folders(values["-NO_2-"])
 
-                if values["-NO_1-"] == True and values["-YES_1-"] == False:
+                if values["-NO_1-"] == True:
                     window.close()
                     no_photo_renamer()
-
-            if values["-NO-"] == True and values["-YES-"] == True:
-                sg.popup("Please on select yes OR no.")
 
 #===============================================================================
 
@@ -75,7 +69,7 @@ def mass_renamer(list_files, folder):
             break
 
         if event == "OK":
-            if Input_field_check.input_field_check(values["-IN-"]) == False:
+            if Input_field_check.input_field_check(values["-IN-"]) == True:
                 pass
 
             else:
@@ -143,10 +137,11 @@ def no_photo_renamer():
         if event == "OK":
             if values["-FOLDER-"] == "":
                 sg.popup("Please select a folder")
+
             else:
                 folder = values["-FOLDER-"]
                 file_list = os.listdir(folder)
-                File_uploader.photo_uploader(folder, file_list)
+                File_uploader.Cred_check(folder, file_list)
 
 #===============================================================================
 
@@ -288,13 +283,14 @@ def photo_renamer():
             if values["-FOLDER-"] == "":
                 sg.popup("Please select a folder")
             else:
-                File_uploader.photo_uploader(folder, file_list)
+                File_uploader.Cred_check(folder, file_list)
 
 #===============================================================================
 
 def multiple_photo_folders_mover(NO_check_value):
     file_list_1 = []
     file_list = []
+    fnames = []
 
     column_1 = [
         [sg.Text("Select source folder")],
@@ -482,7 +478,7 @@ def multiple_photo_folders(NO_check_value):
                 elif int(values["-IN-"]) == 0 and NO_check_value == True:
                     folder = values["-FOLDER-"]
                     file_list = os.listdir(folder)
-                    File_uploader.photo_uploader(folder, file_list)
+                    no_photo_renamer()
 
                 else:
                     for folder_num in range(int(values["-IN-"])):
@@ -506,13 +502,22 @@ def multiple_photo_folders(NO_check_value):
                                 else:
                                     try:
                                         folder = values["-FOLDER-"]
-                                        if values_1["-IN_1-"] in os.listdir(folder):
+                                        file_list = os.listdir(folder)
+                                        for i in range(len(file_list)):
+                                            file_list[i] = file_list[i].lower()
+
+                                        if values_1["-IN_1-"].lower() in file_list:
                                             sg.popup("Name already in use, choose another")
 
                                         else:
-                                            window_1.close()
                                             os.mkdir(folder + "/" + values_1["-IN_1-"])
-                                            multiple_photo_folders_mover(NO_check_value)
+                                            if NO_check_value == False:
+                                                window_1.close()
+                                                multiple_photo_folders_mover(NO_check_value)
+
+                                            else:
+                                                window_1.close()
+                                                no_photo_renamer()
 
                                     except:
                                         sg.popup("An error has occurred")
