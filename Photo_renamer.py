@@ -1,20 +1,14 @@
+import os.path, os, sys, re, io, File_uploader, Input_field_check
 import PySimpleGUI as sg
-import os.path
-import os
-import sys
-import re
-import io
 from PIL import Image
-import File_uploader
-import Input_field_check
 
 #===============================================================================
 
 def main():
-    #defines layout for first window of module
+    #defines layout for first window of module, questions affect path of program
     layout = [
         [sg.Text("Would you like to rename photos?"),
-        sg.Radio("Yes", group_id=1, key="-YES-"), sg.Radio("No", group_id=1, k="-NO-")],
+        sg.Radio("Yes", group_id=1, k="-YES-"), sg.Radio("No", group_id=1, k="-NO-")],
         [sg.Text("Are multiple folders needed for renaming?"),
         sg.Radio("Yes", group_id=2, k="-YES_1-"), sg.Radio("No", group_id=2, k="-NO_1-")],
         [sg.Text("Is multiple folder move mode needed?"),
@@ -30,33 +24,39 @@ def main():
             break
 
         if event == "OK":
-            #defines what happens for first row of checkboxes
+            #defines paths after radios are selected
             if values["-YES-"] == True:
-                if values["-YES_1-"] == True:
+                if values["-YES_1-"] == True: #YY and Y or N path
                     window.close()
-                    multiple_photo_folders(values["-NO-"])
+                    multiple_photo_folders(values["-YES-"], values["-YES_2-"])
 
-                if values["-NO_1-"] == True:
-                    if values["-YES_2-"] == False:
+                else:
+                    if values["-YES_2-"] == True: #YNY path
+                        window.close()
+                        multiple_photo_folders_mover(values["-YES-"])
+
+                    else: #YNN path
                         window.close()
                         photo_renamer()
 
-                    else:
+            else:
+                if values["-YES_1-"] == True: #NY and Y or N path
+                    window.close()
+                    multiple_photo_folders(values["-YES-"], values["-YES_2-"])
+                else:
+                    if values["-YES_2-"] == True: #NNY path
                         window.close()
-                        multiple_photo_folders_mover(values["-NO-"])
+                        multiple_photo_folders_mover(values["-YES-"])
 
-            if values["-NO-"] == True:
-                if values["-YES_1-"] == True:
-                    window.close()
-                    multiple_photo_folders(values["-NO_2-"])
-
-                if values["-NO_1-"] == True:
-                    window.close()
-                    no_photo_renamer()
+                    else: #NNN path
+                        window.close()
+                        no_photo_renamer()
 
 #===============================================================================
 
 def mass_renamer(list_files, folder):
+#Function is for mass renaming multiple selected files and follows format:
+#file_name (#).file_extension
     layout = [
         [sg.Text("Input name to be mass labeled:")],
         [sg.In(enable_events=True, key="-IN-"), sg.Button("OK")],
@@ -74,13 +74,14 @@ def mass_renamer(list_files, folder):
 
             else:
                 try:
+                    #iterates through each file selected and adds file extension
+                    #and (#).
                     count = 1
-
                     for file in list_files:
                         regex = r"(\.\w+)$"
                         file_extension = re.search(regex, file)
                         file_extension.groups()
-
+                        #if file extension present
                         if values["-IN-"].endswith(file_extension[0]) == True:
                             filename = os.path.join(folder + "\\" + file)
                             values["-IN-"] = values["-IN-"].replace(file_extension[0], "")
@@ -94,7 +95,7 @@ def mass_renamer(list_files, folder):
                                 if os.path.isfile(os.path.join(folder,f))
                                 and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
-
+                        #if file extension not present
                         else:
                             filename = os.path.join(folder + "\\" + file)
                             new_file = values["-IN-"] + "(" + str(count) + ")" + file_extension[0]
@@ -110,17 +111,21 @@ def mass_renamer(list_files, folder):
 
                         count += 1
                     window.close()
+                    #below statement is for updating values in previous window
                     return new_fnames
 
                 except:
+                    #name in use, try again
                     if new_file in os.listdir(folder):
                         sg.popup("This name is already in use")
+                    #general catch in case program runs into unexpected scenario
                     else:
                         sg.popup("Something screwed up")
 
 #===============================================================================
 
 def no_photo_renamer():
+    #empty file_list is made to prevent crashes encountered by pushing "OK" early.
     file_list = []
     layout = [
         [sg.Text("Select upload source folder:")],
@@ -146,6 +151,7 @@ def no_photo_renamer():
 #===============================================================================
 
 def photo_renamer():
+    #empty file_list is made to prevent crashes encountered by pushing "OK" early.
     file_list = []
 
     #This sets up what will be on the left side of the window
@@ -204,21 +210,19 @@ def photo_renamer():
             #The following block of code converts the picture from its original
             #size to a viewable thumbnail, while storing it in memory
             #The original file is unmodified during this conversion
-            try:
-                filename = os.path.join(
-                    folder, values["-FILE LIST-"][0]
-                )
-                if filename.endswith(".pdf"):
-                    image = Image.open("No preview available.png")
-                else:
-                    image = Image.open(filename)
-                image.thumbnail((400, 400))
-                bio = io.BytesIO()
-                image.save(bio, format="PNG")
-                window["-IMAGE-"].update(data=bio.getvalue())
+            filename = os.path.join(
+                folder, values["-FILE LIST-"][0]
+            )
+            if filename.endswith(".pdf"):
+                image = Image.open("No preview available.png")
 
-            except:
-                pass
+            else:
+                image = Image.open(filename)
+            image.thumbnail((400, 400))
+            bio = io.BytesIO()
+            image.save(bio, format="PNG")
+            window["-IMAGE-"].update(data=bio.getvalue())
+
         if event == "OK":
             if Input_field_check.input_field_check(values["-INPUT-"]) == True:
                 pass
@@ -287,11 +291,12 @@ def photo_renamer():
 
 #===============================================================================
 
-def multiple_photo_folders_mover(NO_check_value):
+def multiple_photo_folders_mover(YES_check_value):
+    #empty file_lists is made to prevent crashes encountered by pushing "OK" early.
     file_list_1 = []
     file_list = []
     fnames = []
-
+    #defines left side of window
     column_1 = [
         [sg.Text("Select source folder")],
         [sg.In(enable_events=True, readonly=True, key="-FOLDER-"),
@@ -300,11 +305,13 @@ def multiple_photo_folders_mover(NO_check_value):
         [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
         enable_events=True, size=(40,20),key="-FILE LIST-")],
     ]
+    #defines middle of window
     column_2 = [
         [sg.Text("Photo preview")],
         [sg.Image(key="-IMAGE-")],
         [sg.Button("Move >>")],
     ]
+    #defines right side of window
     column_3 = [
         [sg.Text("Select destination folder")],
         [sg.In(enable_events=True, readonly=True, key="-FOLDER_1-"),
@@ -313,7 +320,7 @@ def multiple_photo_folders_mover(NO_check_value):
         enable_events=True, size=(40,20), key="-FILE_LIST_1-")],
         [sg.Button("Done")],
     ]
-
+    #puts all 3 parts together with seperators
     layout = [
         [sg.Column(column_1),
         sg.VSeperator(),
@@ -327,7 +334,7 @@ def multiple_photo_folders_mover(NO_check_value):
         event, values = window.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
-
+        #code block for left folder selection files
         if event == "-FOLDER-":
             try:
                 folder = values["-FOLDER-"]
@@ -347,45 +354,41 @@ def multiple_photo_folders_mover(NO_check_value):
         elif event == "-FILE LIST-":
             #The following block of code converts the picture from its original
             #size to a viewable thumbnail, while storing it in memory
-            #The original file is unmodified during this conversion
-            try:
-                filename = os.path.join(
-                    folder, values["-FILE LIST-"][0]
-                )
-                if filename.endswith(".pdf"):
-                    image = Image.open("No preview available.png")
-                else:
-                    image = Image.open(filename)
-                image.thumbnail((400, 400))
-                bio = io.BytesIO()
-                image.save(bio, format="PNG")
-                window["-IMAGE-"].update(data=bio.getvalue())
-
-            except:
-                pass
+            #The original file is unmodified during this conversion.
+            #If file is .pdf, displays placeholder image.
+            filename = os.path.join(
+                folder, values["-FILE LIST-"][0]
+            )
+            if filename.endswith(".pdf"):
+                image = Image.open("No preview available.png")
+            else:
+                image = Image.open(filename)
+            image.thumbnail((400, 400))
+            bio = io.BytesIO()
+            image.save(bio, format="PNG")
+            window["-IMAGE-"].update(data=bio.getvalue())
 
         elif event == "-FILE_LIST_1-":
             #The following block of code converts the picture from its original
             #size to a viewable thumbnail, while storing it in memory
             #The original file is unmodified during this conversion
-            try:
-                filename = os.path.join(
-                    folder_1, values["-FILE_LIST_1-"][0]
-                )
-                if filename.endswith(".pdf"):
-                    image = Image.open("No preview available.png")
-                else:
-                    image = Image.open(filename)
-                image.thumbnail((400, 400))
-                bio = io.BytesIO()
-                image.save(bio, format = "PNG")
-                window["-IMAGE-"].update(data=bio.getvalue())
-            except:
-                pass
-
+            #If file is .pdf, displays placeholder image.
+            filename = os.path.join(
+                folder_1, values["-FILE_LIST_1-"][0]
+            )
+            if filename.endswith(".pdf"):
+                image = Image.open("No preview available.png")
+            else:
+                image = Image.open(filename)
+            image.thumbnail((400, 400))
+            bio = io.BytesIO()
+            image.save(bio, format = "PNG")
+            window["-IMAGE-"].update(data=bio.getvalue())
+        #code block for right folder selection files
         elif event == "-FOLDER_1-":
             folder_1 = values["-FOLDER_1-"]
             fnames_1 = []
+
             try:
                 file_list_1 = os.listdir(folder_1)
                 for f_1 in file_list_1:
@@ -395,22 +398,25 @@ def multiple_photo_folders_mover(NO_check_value):
                         if os.path.isfile(os.path.join(folder_1, f_1))
                         and f_1.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                         ]
+
             except:
                 file_list_1 = []
             window["-FILE_LIST_1-"].update(fnames_1)
-
+        #code block for moving files from left folder to right folder.
         elif event == "Move >>":
             if values["-FOLDER-"] == "" or values["-FOLDER_1-"] == "":
                 sg.popup("Please select a folder before moving photos!")
+            #moves file from left folder to right folder
             else:
                 for file in values["-FILE LIST-"]:
                     filename_1 = os.path.join(folder, file)
                     new_filename_1 = os.path.join(folder_1, file)
                     os.replace(filename_1,new_filename_1)
-
+                #update each folder list in window
                 try:
                     folder = values["-FOLDER-"]
                     file_list = os.listdir(folder)
+
                     for f in file_list:
                         fnames= [
                             f
@@ -420,6 +426,7 @@ def multiple_photo_folders_mover(NO_check_value):
                         ]
                     folder_1 = values["-FOLDER_1-"]
                     file_list_1 = os.listdir(folder_1)
+
                     for f_1 in file_list_1:
                         fnames_1= [
                             f_1
@@ -427,25 +434,26 @@ def multiple_photo_folders_mover(NO_check_value):
                             if os.path.isfile(os.path.join(folder_1, f_1))
                             and f_1.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
                             ]
+
                 except:
                     file_list = []
                     file_list_1 = []
 
                 window["-FILE LIST-"].update(fnames)
                 window["-FILE_LIST_1-"].update(fnames_1)
-
+        #checks path and proceeds to next function based on original criteria.
         elif event == "Done":
-            if NO_check_value == True:
+            if YES_check_value == True:
                 window.close()
                 photo_renamer()
 
-            elif NO_check_value == False:
+            elif YES_check_value == False:
                 window.close()
                 no_photo_renamer()
 
 #===============================================================================
 
-def multiple_photo_folders(NO_check_value):
+def multiple_photo_folders(YES_check_value, YES_2_check_value):
     #define layout for folder creation Window
     layout = [
         [sg.Text("Where are folders going to be created?"),
@@ -461,7 +469,7 @@ def multiple_photo_folders(NO_check_value):
         event, values = window.read()
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
-
+        #first 2 cases as defined, only except # and folder.
         if event == "OK":
             if values["-IN-"].strip().isdigit() != True:
                 sg.popup("Please enter a number", title=" ")
@@ -470,17 +478,22 @@ def multiple_photo_folders(NO_check_value):
                 sg.popup("Please select a folder before continuing", title=" ")
 
             else:
+                #checks path and proceeds to correct function if folders needed is 0.
                 window.close()
-                #for loop iterates to max value input in folders desired field
-                if int(values["-IN-"]) == 0 and NO_check_value == False:
-                    multiple_photo_folders_mover(NO_check_value)
+                if int(values["-IN-"]) == 0 and YES_2_check_value == True:
+                    multiple_photo_folders_mover(YES_check_value)
 
-                elif int(values["-IN-"]) == 0 and NO_check_value == True:
+                elif int(values["-IN-"]) == 0 and YES_2_check_value == False:
                     folder = values["-FOLDER-"]
                     file_list = os.listdir(folder)
-                    no_photo_renamer()
+                    if YES_check_value == True:
+                        photo_renamer()
+                        
+                    else:
+                        no_photo_renamer()
 
                 else:
+                    #for loop iterates to max value input in folders desired field
                     for folder_num in range(int(values["-IN-"])):
                         layout_1 = [
                             [sg.Text("Folder {} name:".format(folder_num + 1)),
@@ -493,34 +506,36 @@ def multiple_photo_folders(NO_check_value):
                             event_1, values_1 = window_1.read()
 
                             if event_1 == "Exit" or event_1 == sg.WIN_CLOSED:
-                                sys.exit()
+                                break
 
                             if event_1 == "OK":
                                 if Input_field_check.input_field_check(values_1["-IN_1-"]) == True:
                                     pass
 
                                 else:
-                                    try:
+                                        #checks file list to make sure folder
+                                        #name isn't already in use.
                                         folder = values["-FOLDER-"]
                                         file_list = os.listdir(folder)
                                         for i in range(len(file_list)):
                                             file_list[i] = file_list[i].lower()
-
                                         if values_1["-IN_1-"].lower() in file_list:
                                             sg.popup("Name already in use, choose another")
 
                                         else:
                                             os.mkdir(folder + "/" + values_1["-IN_1-"])
-                                            if NO_check_value == False:
+                                            #checks original path and continues based on that
+                                            if YES_2_check_value == True:
                                                 window_1.close()
-                                                multiple_photo_folders_mover(NO_check_value)
+                                                multiple_photo_folders_mover(YES_check_value)
+
+                                            elif YES_check_value == True:
+                                                window_1.close()
+                                                photo_renamer()
 
                                             else:
                                                 window_1.close()
                                                 no_photo_renamer()
-
-                                    except:
-                                        sg.popup("An error has occurred")
 
 #===============================================================================
 
