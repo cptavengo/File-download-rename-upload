@@ -133,37 +133,37 @@ def Photo_uploader(folder, file_list, creds):
                                     if os.path.isfile(os.path.join(folder, files)) \
                                     and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
                                         file_list_1.append(files)
-                                    #opens new window for progress bar
-                                    layout_2 = [
-                                        [sg.Text("Uploading files now...")],
-                                        [sg.ProgressBar(len(file_list_1), orientation="h", \
-                                        size=(20,20), k="-PROG-")],
-                                        [sg.Text(k="-TEXT-", size=(20,0))]
-                                    ]
-                                    window_2 = sg.Window(" ", layout_2)
-                                    #File upload block
-                                    i = 1
-                                    #iterate through each file and upload them to the selected folder
-                                    for files in file_list:
-                                        if os.path.isfile(os.path.join(folder, files)) \
-                                        and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
-                                            event_2, values_2 = window_2.read(timeout=10)
-                                            metadata = {
-                                                "name": files,
-                                                "parents": [DRIVE_FOLDER.get("id")]
-                                            }
-                                            file_path = folder + "/" + files
-                                            file = DRIVE.files().create(body=metadata, fields="id",
-                                            media_body=file_path, media_mime_type="Image/jpeg").execute()
-                                            #below code updates progress bar and file counter during upload
-                                            window_2["-PROG-"].update(i)
-                                            window_2["-TEXT-"].update("{} / {} files uploaded" \
-                                            .format(str(i), str(len(file_list_1))))
-                                            i += 1
+                                #opens new window for progress bar
+                                layout_2 = [
+                                    [sg.Text("Uploading files now...")],
+                                    [sg.ProgressBar(len(file_list_1), orientation="h", \
+                                    size=(20,20), k="-PROG-")],
+                                    [sg.Text(k="-TEXT-", size=(20,0))]
+                                ]
+                                window_2 = sg.Window(" ", layout_2)
+                                #File upload block
+                                i = 1
+                                #iterate through each file and upload them to the selected folder
+                                for files in file_list:
+                                    if os.path.isfile(os.path.join(folder, files)) \
+                                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                                        event_2, values_2 = window_2.read(timeout=10)
+                                        metadata = {
+                                            "name": files,
+                                            "parents": [DRIVE_FOLDER.get("id")]
+                                        }
+                                        file_path = folder + "/" + files
+                                        file = DRIVE.files().create(body=metadata, fields="id",
+                                        media_body=file_path, media_mime_type="Image/jpeg").execute()
+                                        #below code updates progress bar and file counter during upload
+                                        window_2["-PROG-"].update(i)
+                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
+                                        .format(str(i), str(len(file_list_1))))
+                                        i += 1
 
-                                        if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
-                                            break
-                                    window_2.close()
+                                    if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
+                                        break
+                                window_2.close()
 
                             else:
                                 file_metadata = {
@@ -178,37 +178,37 @@ def Photo_uploader(folder, file_list, creds):
                                     if os.path.isfile(os.path.join(folder, files)) \
                                     and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
                                         file_list_1.append(files)
-                                    #opens new window for progress bar
-                                    layout_2 = [
-                                        [sg.Text("Uploading files now...")],
-                                        [sg.ProgressBar(len(file_list_1), orientation="h", \
-                                        size=(20,20), k="-PROG-")],
-                                        [sg.Text(k="-TEXT-", size=(20,0))]
-                                    ]
-                                    window_2 = sg.Window(" ", layout_2)
-                                    #File upload block
-                                    i = 1
-                                    #iterate through each file and upload them to the selected folder
-                                    for files in file_list:
-                                        if os.path.isfile(os.path.join(folder, files)) \
-                                        and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
-                                            event_2, values_2 = window_2.read(timeout=10)
-                                            metadata = {
-                                                "name": files,
-                                                "parents": [DRIVE_FOLDER.get("id")]
-                                            }
-                                            file_path = folder + "/" + files
-                                            file = DRIVE.files().create(body=metadata, fields="id",
-                                            media_body=file_path, media_mime_type="Image/jpeg").execute()
-                                            #below code updates progress bar and file counter during upload
-                                            window_2["-PROG-"].update(i)
-                                            window_2["-TEXT-"].update("{} / {} files uploaded" \
-                                            .format(str(i), str(len(file_list_1))))
-                                            i += 1
+                                #opens new window for progress bar
+                                layout_2 = [
+                                    [sg.Text("Uploading files now...")],
+                                    [sg.ProgressBar(len(file_list_1), orientation="h", \
+                                    size=(20,20), k="-PROG-")],
+                                    [sg.Text(k="-TEXT-", size=(20,0))]
+                                ]
+                                window_2 = sg.Window(" ", layout_2)
+                                #File upload block
+                                i = 1
+                                #iterate through each file and upload them to the selected folder
+                                for files in file_list:
+                                    if os.path.isfile(os.path.join(folder, files)) \
+                                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                                        event_2, values_2 = window_2.read(timeout=10)
+                                        metadata = {
+                                            "name": files,
+                                            "parents": [DRIVE_FOLDER.get("id")]
+                                        }
+                                        file_path = folder + "/" + files
+                                        file = DRIVE.files().create(body=metadata, fields="id",
+                                        media_body=file_path, media_mime_type="Image/jpeg").execute()
+                                        #below code updates progress bar and file counter during upload
+                                        window_2["-PROG-"].update(i)
+                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
+                                        .format(str(i), str(len(file_list_1))))
+                                        i += 1
 
-                                        if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
-                                            break
-                                    window_2.close()
+                                    if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
+                                        break
+                                window_2.close()
 
             except:
                 sg.popup("Something didn't work.")
