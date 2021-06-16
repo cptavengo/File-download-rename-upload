@@ -274,8 +274,10 @@ def photo_renamer():
             if values["-FOLDER-"] == "":
                 sg.popup("Please select a folder")
             else:
-                File_uploader.Cred_check(folder, file_list, values["-FILE LIST-"][0])
-
+                try:
+                    File_uploader.Cred_check(folder, file_list, values["-FILE LIST-"][0])
+                except:
+                    sg.Popup("Please select a file before uploading")
 #===============================================================================
 
 def multiple_photo_folders_mover():
