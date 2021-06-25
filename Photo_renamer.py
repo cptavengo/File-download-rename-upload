@@ -185,7 +185,7 @@ def photo_renamer():
                 filename = os.path.join(
                     folder, values["-FILE LIST-"][0]
                 )
-                if filename.endswith(".pdf"):
+                if filename.lower().endswith(".pdf"):
                     image = Image.open("No preview available.png")
 
                 else:
@@ -349,7 +349,7 @@ def multiple_photo_folders_mover():
                 filename = os.path.join(
                     folder, values["-FILE LIST-"][0]
                 )
-                if filename.endswith(".pdf"):
+                if filename.lower().endswith(".pdf"):
                     image = Image.open("No preview available.png")
                 else:
                     image = Image.open(filename)
@@ -370,7 +370,7 @@ def multiple_photo_folders_mover():
                 filename = os.path.join(
                     folder_1, values["-FILE_LIST_1-"][0]
                 )
-                if filename.endswith(".pdf"):
+                if filename.lower().endswith(".pdf"):
                     image = Image.open("No preview available.png")
                 else:
                     image = Image.open(filename)

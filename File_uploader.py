@@ -100,7 +100,7 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
 
                             if event_shared == "OK":
                                 if os.path.isfile(os.path.join(folder, files)) \
-                                and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                                and files.lower().endswith((".png", ".jpg", ".jpeg")):
                                     #File upload block
                                     metadata = {
                                         "name": files,
@@ -115,12 +115,30 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                                     #execute permissions on the uploaded folder
                                     DRIVE.permissions().create(body=user_permissions, \
                                     sendNotificationEmail=False, fileId=file.get("id")).execute()
+
+                                elif os.path.isfile(os.path.join(folder, files)) \
+                                and files.lower().endswith((".pdf")):
+                                    #File upload block
+                                    metadata = {
+                                        "name": files,
+                                        "parents": [parent_ID]
+                                    }
+                                    file_path = folder + "/" + files
+                                    file = DRIVE.files().create(body=metadata, fields="id", \
+                                    media_body=file_path, media_mime_type="application/pdf").execute()
+                                    #opens a separate .json file that contains shared folder information.
+                                    with open("Permissions.json", "r") as read_file:
+                                        user_permissions = json.load(read_file)
+                                    #execute permissions on the uploaded folder
+                                    DRIVE.permissions().create(body=user_permissions, \
+                                    sendNotificationEmail=False, fileId=file.get("id")).execute()
+
                                 sg.popup("File uploaded!")
                                 window_shared_folder_select.close()
 
                     else:
                         if os.path.isfile(os.path.join(folder, files)) \
-                        and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                        and files.lower().endswith((".png", ".jpg", ".jpeg")):
                             #File upload block
                             metadata = {
                                 "name": files,
@@ -128,6 +146,16 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                             file_path = folder + "/" + files
                             file = DRIVE.files().create(body=metadata, fields="id", \
                             media_body=file_path, media_mime_type="Image/jpeg").execute()
+
+                        if os.path.isfile(os.path.join(folder, files)) \
+                        and files.lower().endswith((".pdf")):
+                            #File upload block
+                            metadata = {
+                                "name": files,
+                            }
+                            file_path = folder + "/" + files
+                            file = DRIVE.files().create(body=metadata, fields="id", \
+                            media_body=file_path, media_mime_type="application/pdf").execute()
                         sg.popup("File uploaded!")
 
                 else:
@@ -180,9 +208,10 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                                 i = 1
                                 #iterate through each file and upload them to the selected folder
                                 for files in file_list:
+                                    event_2, values_2 = window_2.read(timeout=10)
+
                                     if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
-                                        event_2, values_2 = window_2.read(timeout=10)
+                                    and files.lower().endswith((".png", ".jpg", ".jpeg")):
                                         metadata = {
                                             "name": files,
                                             "parents": [DRIVE_FOLDER.get("id")]
@@ -190,6 +219,21 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                                         file_path = folder + "/" + files
                                         file = DRIVE.files().create(body=metadata, fields="id",
                                         media_body=file_path, media_mime_type="Image/jpeg").execute()
+                                        #below code updates progress bar and file counter during upload
+                                        window_2["-PROG-"].update(i)
+                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
+                                        .format(str(i), str(len(file_list_1))))
+                                        i += 1
+
+                                    elif os.path.isfile(os.path.join(folder, files)) \
+                                    and files.lower().endswith(".pdf"):
+                                        metadata = {
+                                            "name": files,
+                                            "parents": [DRIVE_FOLDER.get("id")]
+                                        }
+                                        file_path = folder + "/" + files
+                                        file = DRIVE.files().create(body=metadata, fields="id",
+                                        media_body=file_path, media_mime_type="application/pdf").execute()
                                         #below code updates progress bar and file counter during upload
                                         window_2["-PROG-"].update(i)
                                         window_2["-TEXT-"].update("{} / {} files uploaded" \
@@ -225,9 +269,9 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                                 i = 1
                                 #iterate through each file and upload them to the selected folder
                                 for files in file_list:
+                                    event_2, values_2 = window_2.read(timeout=10)
                                     if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
-                                        event_2, values_2 = window_2.read(timeout=10)
+                                    and files.lower().endswith((".png", ".jpg", ".jpeg")):
                                         metadata = {
                                             "name": files,
                                             "parents": [DRIVE_FOLDER.get("id")]
@@ -241,6 +285,21 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                                         .format(str(i), str(len(file_list_1))))
                                         i += 1
 
+                                    if os.path.isfile(os.path.join(folder, files)) \
+                                    and files.lower().endswith((".pdf")):
+                                        metadata = {
+                                            "name": files,
+                                            "parents": [DRIVE_FOLDER.get("id")]
+                                        }
+                                        file_path = folder + "/" + files
+                                        file = DRIVE.files().create(body=metadata, fields="id",
+                                        media_body=file_path, media_mime_type="application/pdf").execute()
+                                        #below code updates progress bar and file counter during upload
+                                        window_2["-PROG-"].update(i)
+                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
+                                        .format(str(i), str(len(file_list_1))))
+                                        i += 1
+                                        
                                     if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
                                         break
                                 window_2.close()
