@@ -512,7 +512,7 @@ def multiple_photo_folders(YES_1_check_value):
                                         os.mkdir(folder + "/" + values_1["-IN_1-"])
                     #checks original path and continues based on that
                     if YES_1_check_value == True:
-                        multiple_photo_folders_mover(YES_check_value)
+                        multiple_photo_folders_mover()
 
                     else:
                         photo_renamer()

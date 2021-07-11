@@ -1,4 +1,4 @@
-import os.path, json, Input_field_check, sys
+import os.path, json, Input_field_check, sys, re
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -37,6 +37,136 @@ def Cred_check(folder, file_list, single_file_value):
         os.remove("token.json")
 
 #===============================================================================
+def file_sharing(built_drive, FILE_LIST_VALUES, upload_files):
+    Drive_list = built_drive.files().list(fields="files(mimeType, name, id)",\
+    pageSize=1000).execute()
+    file_name_id_list = []
+
+    for file in Drive_list.get("files"):
+        if file["mimeType"] == "application/vnd.google-apps.folder":
+            file_name_id_list.append({"name": file["name"], "id": file["id"]})
+
+    file_name_list = [i["name"] for i in file_name_id_list if "name" in i]
+    file_name_list.sort()
+    layout_shared_folder_select = [
+        [sg.Text("Select shared folder to upload to")],
+        [sg.Listbox(values=file_name_list, enable_events=True,
+        size =(40,20), k="-FOLDER LIST-")],
+        [sg.Button("OK")]
+    ]
+
+    window_shared_folder_select = sg.Window(" ", layout_shared_folder_select)
+    while True:
+        event_shared, values_shared = window_shared_folder_select.read()
+        if event_shared == sg.WIN_CLOSED or event_shared == "Exit":
+            break
+
+        if event_shared == "-FOLDER LIST-":
+            i = 0
+            for i in range(len(file_name_id_list)):
+                if values_shared["-FOLDER LIST-"][0] in file_name_id_list[i]["name"]:
+                    parent_ID = file_name_id_list[i]["id"]
+                    break
+                else:
+                    i += 1
+
+        if event_shared == "OK":
+            if len(upload_files) <= 1:
+                for files in upload_files:
+                    if os.path.isfile(os.path.join(FILE_LIST_VALUES, files)) \
+                    and files.lower().endswith((".png", ".jpg", ".jpeg")):
+                        #File upload block
+                        metadata = {
+                            "name": files,
+                            "parents": [parent_ID]
+                        }
+                        file_path = FILE_LIST_VALUES + "/" + files
+                        file = built_drive.files().create(body=metadata, fields="id", \
+                        media_body=file_path, media_mime_type="Image/jpeg").execute()
+
+                    elif os.path.isfile(os.path.join(FILE_LIST_VALUES, files)) \
+                    and files.lower().endswith((".pdf")):
+                        #File upload block
+                        metadata = {
+                            "name": files,
+                            "parents": [parent_ID]
+                        }
+                        file_path = FILE_LIST_VALUES + "/" + files
+                        file = built_drive.files().create(body=metadata, fields="id", \
+                        media_body=file_path, media_mime_type="application/pdf").execute()
+
+                sg.popup("File uploaded!")
+                window_shared_folder_select.close()
+
+            else:
+                regex = r"(\w+.+/)"
+                folder_search = re.search(regex, FILE_LIST_VALUES)
+                folder_search.groups()
+                folder_name = FILE_LIST_VALUES.replace(folder_search[0], "")
+                file_metadata = {
+                    "name": folder_name,
+                    "mimeType": "application/vnd.google-apps.folder",
+                    "parents": [parent_ID]
+                }
+                DRIVE_FOLDER = built_drive.files().create(body=file_metadata, \
+                fields="id").execute()
+                #create a separate file list for progress bar
+                file_list_1 = []
+
+                for files in upload_files:
+                    if os.path.isfile(os.path.join(FILE_LIST_VALUES, files)) \
+                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                        file_list_1.append(files)
+                #opens new window for progress bar
+                layout_2 = [
+                    [sg.Text("Uploading files now...")],
+                    [sg.ProgressBar(len(file_list_1), orientation="h", \
+                    size=(20,20), k="-PROG-")],
+                    [sg.Text(k="-TEXT-", size=(20,0))]
+                ]
+                window_2 = sg.Window(" ", layout_2)
+                #File upload block
+                i = 1
+                #iterate through each file and upload them to the selected folder
+                for files in upload_files:
+                    event_2, values_2 = window_2.read(timeout=10)
+
+                    if os.path.isfile(os.path.join(FILE_LIST_VALUES, files)) \
+                    and files.lower().endswith((".png", ".jpg", ".jpeg")):
+                        metadata = {
+                            "name": files,
+                            "parents": [DRIVE_FOLDER.get("id")]
+                        }
+                        file_path = FILE_LIST_VALUES + "/" + files
+                        file = built_drive.files().create(body=metadata, fields="id",
+                        media_body=file_path, media_mime_type="Image/jpeg").execute()
+                        #below code updates progress bar and file counter during upload
+                        window_2["-PROG-"].update(i)
+                        window_2["-TEXT-"].update("{} / {} files uploaded" \
+                        .format(str(i), str(len(file_list_1))))
+                        i += 1
+
+                    elif os.path.isfile(os.path.join(FILE_LIST_VALUES, files)) \
+                    and files.lower().endswith(".pdf"):
+                        metadata = {
+                            "name": files,
+                            "parents": [DRIVE_FOLDER.get("id")]
+                        }
+                        file_path = FILE_LIST_VALUES + "/" + files
+                        file = built_drive.files().create(body=metadata, fields="id",
+                        media_body=file_path, media_mime_type="application/pdf").execute()
+                        #below code updates progress bar and file counter during upload
+                        window_2["-PROG-"].update(i)
+                        window_2["-TEXT-"].update("{} / {} files uploaded" \
+                        .format(str(i), str(len(file_list_1))))
+                        i += 1
+
+                    if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
+                        break
+                window_2.close()
+                sg.popup("Files uploaded to {}".format(values_shared["-FOLDER LIST-"][0]))
+            window_shared_folder_select.close()
+#===============================================================================
 
 def Photo_uploader(folder, file_list, creds, single_file_value):
     #gathers necessary information to upload files into Drive
@@ -61,248 +191,101 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
             try:
                 window.close()
                 #Folder creation block
-                files = single_file_value
-
+                file_upload_list = []
+                file_upload_list.append(single_file_value)
                 if values["-YES-"] == True:
 
                     if values["-YES_1-"] == True:
-                        Drive_list = DRIVE.files().list(fields="files(mimeType, name, id)",\
-                        pageSize=1000).execute()
-                        file_name_id_list = []
-
-                        for file in Drive_list.get("files"):
-                            if file["mimeType"] == "application/vnd.google-apps.folder":
-                                file_name_id_list.append({"name": file["name"], "id": file["id"]})
-
-                        file_name_list = [i["name"] for i in file_name_id_list if "name" in i]
-                        file_name_list.sort()
-                        layout_shared_folder_select = [
-                            [sg.Text("Select shared folder to upload to")],
-                            [sg.Listbox(values=file_name_list, enable_events=True,
-                            size =(40,20), k="-FOLDER LIST-")],
-                            [sg.Button("OK")]
-                        ]
-
-                        window_shared_folder_select = sg.Window(" ", layout_shared_folder_select)
-                        while True:
-                            event_shared, values_shared = window_shared_folder_select.read()
-                            if event_shared == sg.WIN_CLOSED or event_shared == "Exit":
-                                break
-
-                            if event_shared == "-FOLDER LIST-":
-                                i = 0
-                                for i in range(len(file_name_id_list)):
-                                    if values_shared["-FOLDER LIST-"][0] in file_name_id_list[i]["name"]:
-                                        parent_ID = file_name_id_list[i]["id"]
-                                        break
-                                    else:
-                                        i += 1
-
-                            if event_shared == "OK":
-                                if os.path.isfile(os.path.join(folder, files)) \
-                                and files.lower().endswith((".png", ".jpg", ".jpeg")):
-                                    #File upload block
-                                    metadata = {
-                                        "name": files,
-                                        "parents": [parent_ID]
-                                    }
-                                    file_path = folder + "/" + files
-                                    file = DRIVE.files().create(body=metadata, fields="id", \
-                                    media_body=file_path, media_mime_type="Image/jpeg").execute()
-                                    #opens a separate .json file that contains shared folder information.
-                                    with open("Permissions.json", "r") as read_file:
-                                        user_permissions = json.load(read_file)
-                                    #execute permissions on the uploaded folder
-                                    DRIVE.permissions().create(body=user_permissions, \
-                                    sendNotificationEmail=False, fileId=file.get("id")).execute()
-
-                                elif os.path.isfile(os.path.join(folder, files)) \
-                                and files.lower().endswith((".pdf")):
-                                    #File upload block
-                                    metadata = {
-                                        "name": files,
-                                        "parents": [parent_ID]
-                                    }
-                                    file_path = folder + "/" + files
-                                    file = DRIVE.files().create(body=metadata, fields="id", \
-                                    media_body=file_path, media_mime_type="application/pdf").execute()
-                                    #opens a separate .json file that contains shared folder information.
-                                    with open("Permissions.json", "r") as read_file:
-                                        user_permissions = json.load(read_file)
-                                    #execute permissions on the uploaded folder
-                                    DRIVE.permissions().create(body=user_permissions, \
-                                    sendNotificationEmail=False, fileId=file.get("id")).execute()
-
-                                sg.popup("File uploaded!")
-                                window_shared_folder_select.close()
-
+                        file_sharing(DRIVE, folder, file_upload_list)
                     else:
-                        if os.path.isfile(os.path.join(folder, files)) \
-                        and files.lower().endswith((".png", ".jpg", ".jpeg")):
+                        if os.path.isfile(os.path.join(folder, single_file_value)) \
+                        and single_file_value.lower().endswith((".png", ".jpg", ".jpeg")):
                             #File upload block
                             metadata = {
-                                "name": files,
+                                "name": single_file_value,
                             }
-                            file_path = folder + "/" + files
+                            file_path = folder + "/" + single_file_value
                             file = DRIVE.files().create(body=metadata, fields="id", \
                             media_body=file_path, media_mime_type="Image/jpeg").execute()
 
-                        if os.path.isfile(os.path.join(folder, files)) \
-                        and files.lower().endswith((".pdf")):
+                        if os.path.isfile(os.path.join(folder, single_file_value)) \
+                        and single_file_value.lower().endswith((".pdf")):
                             #File upload block
                             metadata = {
-                                "name": files,
+                                "name": single_file_value,
                             }
-                            file_path = folder + "/" + files
+                            file_path = folder + "/" + single_file_value
                             file = DRIVE.files().create(body=metadata, fields="id", \
                             media_body=file_path, media_mime_type="application/pdf").execute()
                         sg.popup("File uploaded!")
 
                 else:
-                    layout_1 = [
-                        [sg.Text("Enter Drive folder name:")],
-                        [sg.In(enable_events=True, k="-IN-"), sg.Button("OK")]
-                    ]
+                    if values["-YES_1-"] == True:
+                        file_sharing(DRIVE, folder, file_list)
 
-                    window_1 = sg.Window(" ", layout_1)
-
-                    while True:
-                        event_1, values_1 = window_1.read()
-                        if event_1 == "Exit" or event_1 == sg.WIN_CLOSED:
-                            break
-
-                        if event_1 == "OK":
-                            if Input_field_check.input_field_check(values_1["-IN-"]) == True:
-                                pass
-                            window_1.close()
-
-                            if values["-YES_1-"] == True:
-                                file_metadata = {
-                                    "name": values_1["-IN-"],
-                                    "mimeType": "application/vnd.google-apps.folder"
+                    else:
+                        regex = r"(\w+.+/)"
+                        folder_search = re.search(regex, folder)
+                        folder_search.groups()
+                        folder_name = folder.replace(folder_search[0], "")
+                        file_metadata = {
+                            "name": folder_name,
+                            "mimeType": "application/vnd.google-apps.folder"
+                        }
+                        DRIVE_FOLDER = DRIVE.files().create(body=file_metadata, \
+                        fields="id").execute()
+                        #create a separate file list for progress bar
+                        file_list_1 = []
+                        for files in file_list:
+                            if os.path.isfile(os.path.join(folder, files)) \
+                            and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
+                                file_list_1.append(files)
+                        #opens new window for progress bar
+                        layout_2 = [
+                            [sg.Text("Uploading files now...")],
+                            [sg.ProgressBar(len(file_list_1), orientation="h", \
+                            size=(20,20), k="-PROG-")],
+                            [sg.Text(k="-TEXT-", size=(20,0))]
+                        ]
+                        window_2 = sg.Window(" ", layout_2)
+                        #File upload block
+                        i = 1
+                        #iterate through each file and upload them to the selected folder
+                        for files in file_list:
+                            event_2, values_2 = window_2.read(timeout=10)
+                            if os.path.isfile(os.path.join(folder, files)) \
+                            and files.lower().endswith((".png", ".jpg", ".jpeg")):
+                                metadata = {
+                                    "name": files,
+                                    "parents": [DRIVE_FOLDER.get("id")]
                                 }
-                                DRIVE_FOLDER = DRIVE.files().create(body=file_metadata, \
-                                fields="id").execute()
-                                #opens a separate .json file that contains shared folder information.
-                                with open("Permissions.json", "r") as read_file:
-                                    user_permissions = json.load(read_file)
-                                #execute permissions on the uploaded folder
-                                DRIVE.permissions().create(body=user_permissions, \
-                                sendNotificationEmail=False, fileId=DRIVE_FOLDER.get("id")).execute()
-                                #create a separate file list for progress bar
-                                file_list_1 = []
+                                file_path = folder + "/" + files
+                                file = DRIVE.files().create(body=metadata, fields="id",
+                                media_body=file_path, media_mime_type="Image/jpeg").execute()
+                                #below code updates progress bar and file counter during upload
+                                window_2["-PROG-"].update(i)
+                                window_2["-TEXT-"].update("{} / {} files uploaded" \
+                                .format(str(i), str(len(file_list_1))))
+                                i += 1
 
-                                for files in file_list:
-                                    if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
-                                        file_list_1.append(files)
-                                #opens new window for progress bar
-                                layout_2 = [
-                                    [sg.Text("Uploading files now...")],
-                                    [sg.ProgressBar(len(file_list_1), orientation="h", \
-                                    size=(20,20), k="-PROG-")],
-                                    [sg.Text(k="-TEXT-", size=(20,0))]
-                                ]
-                                window_2 = sg.Window(" ", layout_2)
-                                #File upload block
-                                i = 1
-                                #iterate through each file and upload them to the selected folder
-                                for files in file_list:
-                                    event_2, values_2 = window_2.read(timeout=10)
-
-                                    if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".png", ".jpg", ".jpeg")):
-                                        metadata = {
-                                            "name": files,
-                                            "parents": [DRIVE_FOLDER.get("id")]
-                                        }
-                                        file_path = folder + "/" + files
-                                        file = DRIVE.files().create(body=metadata, fields="id",
-                                        media_body=file_path, media_mime_type="Image/jpeg").execute()
-                                        #below code updates progress bar and file counter during upload
-                                        window_2["-PROG-"].update(i)
-                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
-                                        .format(str(i), str(len(file_list_1))))
-                                        i += 1
-
-                                    elif os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith(".pdf"):
-                                        metadata = {
-                                            "name": files,
-                                            "parents": [DRIVE_FOLDER.get("id")]
-                                        }
-                                        file_path = folder + "/" + files
-                                        file = DRIVE.files().create(body=metadata, fields="id",
-                                        media_body=file_path, media_mime_type="application/pdf").execute()
-                                        #below code updates progress bar and file counter during upload
-                                        window_2["-PROG-"].update(i)
-                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
-                                        .format(str(i), str(len(file_list_1))))
-                                        i += 1
-
-                                    if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
-                                        break
-                                window_2.close()
-
-                            else:
-                                file_metadata = {
-                                    "name": values_1["-IN-"],
-                                    "mimeType": "application/vnd.google-apps.folder"
+                            if os.path.isfile(os.path.join(folder, files)) \
+                            and files.lower().endswith((".pdf")):
+                                metadata = {
+                                    "name": files,
+                                    "parents": [DRIVE_FOLDER.get("id")]
                                 }
-                                DRIVE_FOLDER = DRIVE.files().create(body=file_metadata, \
-                                fields="id").execute()
-                                #create a separate file list for progress bar
-                                file_list_1 = []
-                                for files in file_list:
-                                    if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".png", ".jpg", ".jpeg", ".pdf")):
-                                        file_list_1.append(files)
-                                #opens new window for progress bar
-                                layout_2 = [
-                                    [sg.Text("Uploading files now...")],
-                                    [sg.ProgressBar(len(file_list_1), orientation="h", \
-                                    size=(20,20), k="-PROG-")],
-                                    [sg.Text(k="-TEXT-", size=(20,0))]
-                                ]
-                                window_2 = sg.Window(" ", layout_2)
-                                #File upload block
-                                i = 1
-                                #iterate through each file and upload them to the selected folder
-                                for files in file_list:
-                                    event_2, values_2 = window_2.read(timeout=10)
-                                    if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".png", ".jpg", ".jpeg")):
-                                        metadata = {
-                                            "name": files,
-                                            "parents": [DRIVE_FOLDER.get("id")]
-                                        }
-                                        file_path = folder + "/" + files
-                                        file = DRIVE.files().create(body=metadata, fields="id",
-                                        media_body=file_path, media_mime_type="Image/jpeg").execute()
-                                        #below code updates progress bar and file counter during upload
-                                        window_2["-PROG-"].update(i)
-                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
-                                        .format(str(i), str(len(file_list_1))))
-                                        i += 1
+                                file_path = folder + "/" + files
+                                file = DRIVE.files().create(body=metadata, fields="id",
+                                media_body=file_path, media_mime_type="application/pdf").execute()
+                                #below code updates progress bar and file counter during upload
+                                window_2["-PROG-"].update(i)
+                                window_2["-TEXT-"].update("{} / {} files uploaded" \
+                                .format(str(i), str(len(file_list_1))))
+                                i += 1
 
-                                    if os.path.isfile(os.path.join(folder, files)) \
-                                    and files.lower().endswith((".pdf")):
-                                        metadata = {
-                                            "name": files,
-                                            "parents": [DRIVE_FOLDER.get("id")]
-                                        }
-                                        file_path = folder + "/" + files
-                                        file = DRIVE.files().create(body=metadata, fields="id",
-                                        media_body=file_path, media_mime_type="application/pdf").execute()
-                                        #below code updates progress bar and file counter during upload
-                                        window_2["-PROG-"].update(i)
-                                        window_2["-TEXT-"].update("{} / {} files uploaded" \
-                                        .format(str(i), str(len(file_list_1))))
-                                        i += 1
-                                        
-                                    if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
-                                        break
-                                window_2.close()
+                            if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
+                                break
+                        window_2.close()
 
             except:
                 sg.popup("Something didn't work.")
