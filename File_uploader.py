@@ -33,18 +33,29 @@ def Cred_check(folder, file_list, single_file_value):
         Photo_uploader(folder, file_list, creds, single_file_value)
 
     except:
-        sg.popup("Deleting token.json. Try 'OK' again.")
+        sg.popup("Deleting token.json. Try 'Upload' again.")
         os.remove("token.json")
 
 #===============================================================================
 def file_sharing(built_drive, FILE_LIST_VALUES, upload_files):
-    Drive_list = built_drive.files().list(fields="files(mimeType, name, id)",\
-    pageSize=1000).execute()
+    i=0
+    token=""
     file_name_id_list = []
+    
+    for i in range(0,100):
+        Drive_list = built_drive.files().list(pageToken=token,\
+        fields="nextPageToken, files(mimeType, name, id)",\
+        pageSize=1000).execute()
 
-    for file in Drive_list.get("files"):
-        if file["mimeType"] == "application/vnd.google-apps.folder":
-            file_name_id_list.append({"name": file["name"], "id": file["id"]})
+        token = Drive_list.get("nextPageToken", None)
+
+        for file in Drive_list.get("files"):
+            if file["mimeType"] == "application/vnd.google-apps.folder":
+                file_name_id_list.append({"name": file["name"], "id": file["id"]})
+
+        if token == None:
+            break
+        i+=1
 
     file_name_list = [i["name"] for i in file_name_id_list if "name" in i]
     file_name_list.sort()
