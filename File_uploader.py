@@ -13,7 +13,8 @@ import PySimpleGUI as sg
 def Cred_check(folder, file_list, single_file_value):
     try:
         creds = None
-        SCOPES = "https://www.googleapis.com/auth/drive"
+        SCOPES = ["https://www.googleapis.com/auth/drive", \
+        "https://www.googleapis.com/auth/photoslibrary"]
 
         if os.path.exists("token.json"):
             creds = Credentials.from_authorized_user_file("token.json", SCOPES)
@@ -37,11 +38,11 @@ def Cred_check(folder, file_list, single_file_value):
         os.remove("token.json")
 
 #===============================================================================
-def file_sharing(built_drive, FILE_LIST_VALUES, upload_files):
+def file_sharing(built_drive, FILE_LIST_VALUES, upload_files, single_file_upload):
     i=0
     token=""
     file_name_id_list = []
-    
+
     for i in range(0,100):
         Drive_list = built_drive.files().list(pageToken=token,\
         fields="nextPageToken, files(mimeType, name, id)",\
@@ -82,7 +83,7 @@ def file_sharing(built_drive, FILE_LIST_VALUES, upload_files):
                     i += 1
 
         if event_shared == "OK":
-            if len(upload_files) <= 1:
+            if single_file_upload == True:
                 for files in upload_files:
                     if os.path.isfile(os.path.join(FILE_LIST_VALUES, files)) \
                     and files.lower().endswith((".png", ".jpg", ".jpeg")):
@@ -106,7 +107,7 @@ def file_sharing(built_drive, FILE_LIST_VALUES, upload_files):
                         file = built_drive.files().create(body=metadata, fields="id", \
                         media_body=file_path, media_mime_type="application/pdf").execute()
 
-                sg.popup("File uploaded!")
+                sg.popup("File uploaded to {}".format(values_shared["-FOLDER LIST-"][0]))
                 window_shared_folder_select.close()
 
             else:
@@ -175,7 +176,7 @@ def file_sharing(built_drive, FILE_LIST_VALUES, upload_files):
                     if event_2 == "Exit" or event_2 == sg.WIN_CLOSED:
                         break
                 window_2.close()
-                sg.popup("Files uploaded to {}".format(values_shared["-FOLDER LIST-"][0]))
+                sg.popup("Folder and files uploaded to {}".format(values_shared["-FOLDER LIST-"][0]))
             window_shared_folder_select.close()
 #===============================================================================
 
@@ -184,7 +185,7 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
     DRIVE = build("drive", "v3", credentials=creds)
 
     layout = [
-        [sg.Text("Single file upload?"), sg.Radio("Yes", group_id=1, k="-YES-"),
+        [sg.Text("Single file upload (Folder uploaded on 'No' selection)?"), sg.Radio("Yes", group_id=1, k="-YES-"),
         sg.Radio("No", group_id=1, k="-NO-")],
         [sg.Text("Share files?"), sg.Radio("Yes", group_id=2, k="-YES_1-"),
         sg.Radio("No", group_id=2, k= "-NO_1-")],
@@ -203,11 +204,12 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
                 window.close()
                 #Folder creation block
                 file_upload_list = []
+                yes_no_value = values["-YES-"]
                 file_upload_list.append(single_file_value)
                 if values["-YES-"] == True:
 
                     if values["-YES_1-"] == True:
-                        file_sharing(DRIVE, folder, file_upload_list)
+                        file_sharing(DRIVE, folder, file_upload_list, yes_no_value)
                     else:
                         if os.path.isfile(os.path.join(folder, single_file_value)) \
                         and single_file_value.lower().endswith((".png", ".jpg", ".jpeg")):
@@ -232,7 +234,7 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
 
                 else:
                     if values["-YES_1-"] == True:
-                        file_sharing(DRIVE, folder, file_list)
+                        file_sharing(DRIVE, folder, file_list, single_file_value)
 
                     else:
                         regex = r"(\w+.+/)"
