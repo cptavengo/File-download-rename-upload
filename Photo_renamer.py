@@ -8,9 +8,11 @@ def main():
     #defines layout for first window of module, questions affect path of program
     layout = [
         [sg.Text("Are multiple folders needed for renaming?"),
-        sg.Radio("Yes", group_id=1, k="-YES-"), sg.Radio("No", group_id=1)],
+        sg.Radio("Yes", group_id=1, k="-YES-"),
+        sg.Radio("No", group_id=1, k="-NO-")],
         [sg.Text("Is multiple folder move mode needed?"),
-        sg.Radio("Yes", group_id=2, k="-YES_1-"), sg.Radio("No", group_id=2)],
+        sg.Radio("Yes", group_id=2, k="-YES_1-"),
+        sg.Radio("No", group_id=2, k="-NO_1-")],
         [sg.Button("OK")],
     ]
 
@@ -22,33 +24,23 @@ def main():
             break
 
         if event == "OK":
-            #defines paths after radios are selected
-            if values["-YES-"] == True: #Y and Y or N path
-                window.close()
-                multiple_photo_folders(values["-YES_1-"])
-
+            if values["-YES-"] == values["-NO-"] \
+            or values["-YES_1-"] == values["-NO_1-"]:
+                sg.Popup("Please make a choice for each selection", title= " ")
             else:
-                if values["-YES_1-"] == True: #NY path
+                #defines paths after radios are selected
+                if values["-YES-"] == True: #Y and Y or N path
                     window.close()
-                    multiple_photo_folders_mover()
+                    multiple_photo_folders(values["-YES_1-"])
 
-                else: #NN path
-                    window.close()
-                    photo_renamer()
+                else:
+                    if values["-YES_1-"] == True: #NY path
+                        window.close()
+                        multiple_photo_folders_mover()
 
-        else:
-            if values["-YES-"] == True: #Y and Y or N path
-                window.close()
-                multiple_photo_folders(values["-YES_1-"])
-            else:
-                if values["-YES_1-"] == True: #NY path
-                    window.close()
-                    multiple_photo_folders_mover()
-
-                else: #NN path
-                    window.close()
-                    photo_renamer()
-
+                    else: #NN path
+                        window.close()
+                        photo_renamer()
 #===============================================================================
 
 def mass_renamer(folder, file_list):
@@ -114,10 +106,10 @@ def mass_renamer(folder, file_list):
                 except:
                     #name in use, try again
                     if new_file in os.listdir(folder):
-                        sg.popup("This name is already in use")
+                        sg.popup("This name is already in use", title= " ")
                     #general catch in case program runs into unexpected scenario
                     else:
-                        sg.popup("Something screwed up")
+                        sg.popup("Something screwed up", title= " ")
 
 #===============================================================================
 
@@ -196,7 +188,7 @@ def photo_renamer():
                 window["-IMAGE-"].update(data=bio.getvalue())
 
             except:
-                sg.popup("File list is empty")
+                sg.popup("File list is empty", title= " ")
 
         if event == "OK":
             if Input_field_check.input_field_check(values["-INPUT-"]) == True:
@@ -254,7 +246,7 @@ def photo_renamer():
             file_list_mass = values["-FILE LIST-"]
             folder = values["-FOLDER-"]
             if file_list_mass == []:
-                sg.popup("Please select photos for mass rename first")
+                sg.popup("Please select photos for mass rename first", title= " ")
             else:
                 window["-FILE LIST-"].update(mass_renamer(folder, file_list_mass))
 
@@ -272,12 +264,12 @@ def photo_renamer():
 
         if event == "Upload":
             if values["-FOLDER-"] == "":
-                sg.popup("Please select a folder")
+                sg.popup("Please select a folder", title= " ")
             else:
                 try:
                     File_uploader.Cred_check(folder, file_list, values["-FILE LIST-"][0])
                 except:
-                    sg.Popup("Please select a file before uploading")
+                    sg.Popup("Please select a file before uploading", title= " ")
 #===============================================================================
 
 def multiple_photo_folders_mover():
@@ -359,7 +351,7 @@ def multiple_photo_folders_mover():
                 window["-IMAGE-"].update(data=bio.getvalue())
 
             except:
-                sg.popup("Left file list is empty")
+                sg.popup("Left file list is empty", title= " ")
 
         elif event == "-FILE_LIST_1-":
             #The following block of code converts the picture from its original
@@ -380,7 +372,7 @@ def multiple_photo_folders_mover():
                 window["-IMAGE-"].update(data=bio.getvalue())
 
             except:
-                sg.popup("Right file list is empty")
+                sg.popup("Right file list is empty", title= " ")
         #code block for right folder selection files
         elif event == "-FOLDER_1-":
             folder_1 = values["-FOLDER_1-"]
@@ -402,7 +394,7 @@ def multiple_photo_folders_mover():
         #code block for moving files from left folder to right folder.
         elif event == "Move >>":
             if values["-FOLDER-"] == "" or values["-FOLDER_1-"] == "":
-                sg.popup("Please select a folder before moving photos!")
+                sg.popup("Please select a folder before moving photos!", title= " ")
             #moves file from left folder to right folder
             else:
                 for file in values["-FILE LIST-"]:
@@ -505,7 +497,7 @@ def multiple_photo_folders(YES_1_check_value):
                                     for i in range(len(file_list)):
                                         file_list[i] = file_list[i].lower()
                                     if values_1["-IN_1-"].lower() in file_list:
-                                        sg.popup("Name already in use, choose another")
+                                        sg.popup("Name already in use, choose another", title= " ")
 
                                     else:
                                         window_1.close()

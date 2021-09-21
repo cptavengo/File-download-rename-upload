@@ -14,7 +14,7 @@ def input_field_check(input_field):
         or input_field.find("|") != -1 or input_field.find("?") != -1 \
         or input_field.find("*") != -1:
             sg.popup("The following characters cannot be used:"
-                "< > : \ / \" | ? * ")
+                "< > : \ / \" | ? * ", title= " ")
             return True
 
     else:
