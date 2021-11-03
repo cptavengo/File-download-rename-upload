@@ -1,4 +1,4 @@
-import os.path, os, sys, re, io, File_uploader, Input_field_check
+import os.path, os, sys, re, io, File_uploader, Checks, shutil, File_downloader
 import PySimpleGUI as sg
 from PIL import Image
 
@@ -6,7 +6,13 @@ from PIL import Image
 
 def main():
     #defines layout for first window of module, questions affect path of program
+    menu_def = [
+        ["File", ["Download", "File Mover", "Photo Renamer",
+        "Folder Creator", "---", "Properties", "Exit"]],
+    ]
+
     layout = [
+        [sg.Menu(menu_def)],
         [sg.Text("Are multiple folders needed for renaming?"),
         sg.Radio("Yes", group_id=1, k="-YES-"),
         sg.Radio("No", group_id=1, k="-NO-")],
@@ -41,6 +47,26 @@ def main():
                     else: #NN path
                         window.close()
                         photo_renamer()
+
+        if event == "Download":
+            window.close()
+            File_downloader.main()
+
+        if event == "File Mover":
+            window.close()
+            multiple_photo_folders_mover()
+
+        if event == "Folder Creator":
+            window.close()
+            multiple_photo_folders(False)
+
+        if event == "Photo Renamer":
+            window.close()
+            photo_renamer()
+
+        if event == "Properties":
+            sg.popup("Future button currently not working")
+
 #===============================================================================
 
 def mass_renamer(folder, file_list):
@@ -58,7 +84,7 @@ def mass_renamer(folder, file_list):
             break
 
         if event == "OK":
-            if Input_field_check.input_field_check(values["-IN-"]) == True:
+            if Checks.input_field_check(values["-IN-"]) == True:
                 pass
 
             else:
@@ -116,9 +142,13 @@ def mass_renamer(folder, file_list):
 def photo_renamer():
     #empty file_list is made to prevent crashes encountered by pushing "OK" early.
     file_list = []
-
+    menu_def = [
+        ["File", ["Download", "File Mover",
+        "Folder Creator", "---", "Properties", "Exit"]],
+    ]
     #This sets up what will be on the left side of the window
     photo_column = [
+        [sg.Menu(menu_def)],
         [sg.Text("Select source folder for photo(s)")],
         [sg.In(enable_events=True, readonly=True, k="-FOLDER-"),
         sg.FolderBrowse()],
@@ -191,7 +221,7 @@ def photo_renamer():
                 sg.popup("File list is empty", title= " ")
 
         if event == "OK":
-            if Input_field_check.input_field_check(values["-INPUT-"]) == True:
+            if Checks.input_field_check(values["-INPUT-"]) == True:
                 pass
 
             else:
@@ -254,6 +284,7 @@ def photo_renamer():
             file_list_delete = values["-FILE LIST-"]
             for file in file_list_delete:
                 os.remove(os.path.join(folder, file))
+            file_list = os.listdir(folder)
             fnames_delete = [
                 f
                 for f in file_list
@@ -267,9 +298,25 @@ def photo_renamer():
                 sg.popup("Please select a folder", title= " ")
             else:
                 try:
-                    File_uploader.Cred_check(folder, file_list, values["-FILE LIST-"][0])
+                    File_uploader.main(folder, file_list, values["-FILE LIST-"][0])
                 except:
                     sg.Popup("Please select a file before uploading", title= " ")
+
+        if event == "Download":
+            window.close()
+            File_downloader.main()
+
+        if event == "File Mover":
+            window.close()
+            multiple_photo_folders_mover()
+
+        if event == "Folder Creator":
+            window.close()
+            multiple_photo_folders(False)
+
+        if event == "Properties":
+            sg.popup("Future button currently not working")
+
 #===============================================================================
 
 def multiple_photo_folders_mover():
@@ -277,6 +324,10 @@ def multiple_photo_folders_mover():
     file_list_1 = []
     file_list = []
     fnames = []
+    menu_def = [
+        ["File", ["Download", "Photo Renamer",
+        "Folder Creator", "---", "Properties", "Exit"]],
+    ]
     #defines left side of window
     column_1 = [
         [sg.Text("Select source folder")],
@@ -303,6 +354,7 @@ def multiple_photo_folders_mover():
     ]
     #puts all 3 parts together with seperators
     layout = [
+        [sg.Menu(menu_def)],
         [sg.Column(column_1),
         sg.VSeperator(),
         sg.Column(column_2),
@@ -400,7 +452,7 @@ def multiple_photo_folders_mover():
                 for file in values["-FILE LIST-"]:
                     filename_1 = os.path.join(folder, file)
                     new_filename_1 = os.path.join(folder_1, file)
-                    os.replace(filename_1,new_filename_1)
+                    shutil.move(filename_1, new_filename_1)
                 #update each folder list in window
                 try:
                     folder = values["-FOLDER-"]
@@ -435,11 +487,31 @@ def multiple_photo_folders_mover():
             window.close()
             photo_renamer()
 
+        if event == "Download":
+            window.close()
+            File_downloader.main()
+
+        if event == "Folder Creator":
+            window.close()
+            multiple_photo_folders(False)
+
+        if event == "Photo Renamer":
+            window.close()
+            photo_renamer()
+
+        if event == "Properties":
+            sg.popup("Future button currently not working")
+
 #===============================================================================
 
 def multiple_photo_folders(YES_1_check_value):
     #define layout for folder creation Window
+    menu_def = [
+        ["File", ["Download", "Photo Renamer",
+        "Folder Mover", "---", "Properties", "Exit"]],
+    ]
     layout = [
+        [sg.Menu(menu_def)],
         [sg.Text("Where are folders going to be created?"),
         sg.In("", readonly=True, k="-FOLDER-"),
         sg.FolderBrowse()],
@@ -486,7 +558,7 @@ def multiple_photo_folders(YES_1_check_value):
                                 break
 
                             if event_1 == "OK":
-                                if Input_field_check.input_field_check(values_1["-IN_1-"]) == True:
+                                if Checks.input_field_check(values_1["-IN_1-"]) == True:
                                     pass
 
                                 else:
@@ -508,6 +580,21 @@ def multiple_photo_folders(YES_1_check_value):
 
                     else:
                         photo_renamer()
+
+        if event == "Download":
+            window.close()
+            File_downloader.main()
+
+        if event == "Folder Mover":
+            window.close()
+            multiple_photo_folders_mover()
+
+        if event == "Photo Renamer":
+            window.close()
+            photo_renamer()
+
+        if event == "Properties":
+            sg.popup("Future button currently not working")
 
 #===============================================================================
 

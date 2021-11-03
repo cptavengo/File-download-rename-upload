@@ -1,44 +1,14 @@
-import os.path, json, Input_field_check, sys, re
+import os.path, json, Checks, sys, re
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
 import PySimpleGUI as sg
 
 #===============================================================================
-#This code block is from the Google Python Quickstart for Google Drive API,
-#with a try/except block added in. Try/except block was added to make sure that
-#when the token.json file expires, user is notified and file is deleted.
-#This makes it so that user doesn't have to start from the beginning.
-def Cred_check(folder, file_list, single_file_value):
-    try:
-        creds = None
-        SCOPES = ["https://www.googleapis.com/auth/drive", \
-        "https://www.googleapis.com/auth/photoslibrary"]
-
-        if os.path.exists("token.json"):
-            creds = Credentials.from_authorized_user_file("token.json", SCOPES)
-
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-
-            else:
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    "credentials.json", SCOPES)
-                creds = flow.run_local_server(port=0)
-
-            with open("token.json", "w") as token:
-                token.write(creds.to_json())
-
-        Photo_uploader(folder, file_list, creds, single_file_value)
-
-    except:
-        sg.popup("Deleting token.json. Try 'Upload' again.", title= " ")
-        os.remove("token.json")
+def main(folder, file_list, single_file_value):
+    Photo_uploader(folder, file_list, Checks.Cred_check(), single_file_value)
 
 #===============================================================================
-def file_sharing(built_drive, FILE_LIST_VALUES, upload_files, single_file_upload, yes_no_2_value):
+def file_sharing(built_drive, FILE_LIST_VALUES, upload_files, \
+single_file_upload, yes_no_2_value):
     i=0
     token=""
     file_name_id_list = []
