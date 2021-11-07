@@ -4,6 +4,11 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 import PySimpleGUI as sg
 
+if os.path.exists("Theme.json"):
+    with open("Theme.json", "r") as Theme:
+        windowTheme = json.load(Theme)
+    sg.theme(windowTheme)
+
 def input_field_check(input_field):
     """Helper function to perform input field checks against all spaces and illegal characters"""
     #This checks to make sure that the input is not blank or spaces

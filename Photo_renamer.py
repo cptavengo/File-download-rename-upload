@@ -1,13 +1,19 @@
-import os.path, os, sys, re, io, File_uploader, Checks, shutil, File_downloader
+import os.path, os, sys, re, io, json, \
+File_uploader, Checks, shutil, File_downloader
 import PySimpleGUI as sg
 from PIL import Image
+
+if os.path.exists("Theme.json"):
+    with open("Theme.json", "r") as Theme:
+        windowTheme = json.load(Theme)
+    sg.theme(windowTheme)
 
 #===============================================================================
 
 def main():
     #defines layout for first window of module, questions affect path of program
     menu_def = [
-        ["File", ["Download", "File Mover", "Photo Renamer",
+        ["File", ["Download", "File Mover", "File Renamer",
         "Folder Creator", "---", "Properties", "Exit"]],
     ]
 
@@ -60,12 +66,14 @@ def main():
             window.close()
             multiple_photo_folders(False)
 
-        if event == "Photo Renamer":
+        if event == "File Renamer":
             window.close()
             photo_renamer()
 
         if event == "Properties":
-            sg.popup("Future button currently not working")
+            File_downloader.properties()
+            window.close()
+            main()
 
 #===============================================================================
 
@@ -150,7 +158,8 @@ def photo_renamer():
     photo_column = [
         [sg.Menu(menu_def)],
         [sg.Text("Select source folder for photo(s)")],
-        [sg.In(enable_events=True, readonly=True, k="-FOLDER-"),
+        [sg.In(enable_events=True, readonly=True, k="-FOLDER-",
+        disabled_readonly_background_color=sg.theme_input_background_color()),
         sg.FolderBrowse()],
         [sg.Text("Select photo(s) to rename:")],
         [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
@@ -315,7 +324,9 @@ def photo_renamer():
             multiple_photo_folders(False)
 
         if event == "Properties":
-            sg.popup("Future button currently not working")
+            File_downloader.properties()
+            window.close()
+            photo_renamer()
 
 #===============================================================================
 
@@ -325,13 +336,14 @@ def multiple_photo_folders_mover():
     file_list = []
     fnames = []
     menu_def = [
-        ["File", ["Download", "Photo Renamer",
+        ["File", ["Download", "File Renamer",
         "Folder Creator", "---", "Properties", "Exit"]],
     ]
     #defines left side of window
     column_1 = [
         [sg.Text("Select source folder")],
-        [sg.In(enable_events=True, readonly=True, key="-FOLDER-"),
+        [sg.In(enable_events=True, readonly=True, key="-FOLDER-",
+        disabled_readonly_background_color=sg.theme_input_background_color()),
         sg.FolderBrowse()],
         [sg.Text("Select photo(s) to move:")],
         [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
@@ -346,7 +358,8 @@ def multiple_photo_folders_mover():
     #defines right side of window
     column_3 = [
         [sg.Text("Select destination folder")],
-        [sg.In(enable_events=True, readonly=True, key="-FOLDER_1-"),
+        [sg.In(enable_events=True, readonly=True, key="-FOLDER_1-",
+        disabled_readonly_background_color=sg.theme_input_background_color()),
         sg.FolderBrowse()],
         [sg.Listbox(values=file_list_1, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
         enable_events=True, size=(40,20), key="-FILE_LIST_1-")],
@@ -495,28 +508,31 @@ def multiple_photo_folders_mover():
             window.close()
             multiple_photo_folders(False)
 
-        if event == "Photo Renamer":
+        if event == "File Renamer":
             window.close()
             photo_renamer()
 
         if event == "Properties":
-            sg.popup("Future button currently not working")
+            File_downloader.properties()
+            window.close()
+            multiple_photo_folders_mover()
 
 #===============================================================================
 
 def multiple_photo_folders(YES_1_check_value):
     #define layout for folder creation Window
     menu_def = [
-        ["File", ["Download", "Photo Renamer",
+        ["File", ["Download", "File Renamer",
         "Folder Mover", "---", "Properties", "Exit"]],
     ]
     layout = [
         [sg.Menu(menu_def)],
         [sg.Text("Where are folders going to be created?"),
-        sg.In("", readonly=True, k="-FOLDER-"),
+        sg.In("", readonly=True, k="-FOLDER-",
+        disabled_readonly_background_color=sg.theme_input_background_color()),
         sg.FolderBrowse()],
         [sg.Text("How many folders need to be created?"),
-        sg.Input("", k="-IN-")],
+        sg.In("", k="-IN-")],
         [sg.Button("OK")],
     ]
     window = sg.Window(" ", layout)
@@ -589,12 +605,14 @@ def multiple_photo_folders(YES_1_check_value):
             window.close()
             multiple_photo_folders_mover()
 
-        if event == "Photo Renamer":
+        if event == "File Renamer":
             window.close()
             photo_renamer()
 
         if event == "Properties":
-            sg.popup("Future button currently not working")
+            File_downloader.properties()
+            window.close()
+            multiple_photo_folders(YES_1_check_value)
 
 #===============================================================================
 

@@ -35,6 +35,7 @@
 *.i*86
 *.x86_64
 *.hex
+*.pyw
 
 # Debug files
 *.dSYM/
@@ -56,3 +57,4 @@ credentials.json
 Drive Folder List.json
 token.json
 Permissions.json
+Theme.json

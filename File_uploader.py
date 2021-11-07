@@ -2,15 +2,22 @@ import os.path, json, Checks, sys, re
 from googleapiclient.discovery import build
 import PySimpleGUI as sg
 
+if os.path.exists("Theme.json"):
+    with open("Theme.json", "r") as Theme:
+        windowTheme = json.load(Theme)
+    sg.theme(windowTheme)
+
 #===============================================================================
+
 def main(folder, file_list, single_file_value):
     Photo_uploader(folder, file_list, Checks.Cred_check(), single_file_value)
 
 #===============================================================================
+
 def file_sharing(built_drive, FILE_LIST_VALUES, upload_files, \
 single_file_upload, yes_no_2_value):
-    i=0
-    token=""
+    i = 0
+    nextPageToken = "empty"
     file_name_id_list = []
     #Cuts down on folder loading time by reading from an existing file
     if os.path.exists("Drive Folder List.json") and yes_no_2_value == True:
@@ -21,27 +28,28 @@ single_file_upload, yes_no_2_value):
 
     #Reads from the user's Google Drive folders to find everything, will take a while
     else:
-        for i in range(0,100):
-            Drive_list = built_drive.files().list(pageToken=token,\
-            fields="nextPageToken, files(mimeType, name, id)",\
-            pageSize=1000).execute()
+        while nextPageToken != "":
+            if nextPageToken == "empty":
+                nextPageToken = ""
 
-            token = Drive_list.get("nextPageToken", None)
+            else:
+                nextPageToken
+
+            Drive_list = built_drive.files().list(pageToken=nextPageToken,\
+            fields="nextPageToken, files(mimeType, name, id)").execute()
 
             for file in Drive_list.get("files"):
                 if file["mimeType"] == "application/vnd.google-apps.folder":
                     file_name_id_list.append({"name": file["name"], "id": file["id"]})
+            nextPageToken = Drive_list.get("nextPageToken", "")
 
-            if token == None:
-                break
-            i+=1
+            for i in range (0,len(file_name_id_list)):
+                file_name_list = [i["name"] for i in file_name_id_list if "name" in i]
+                file_name_list.sort()
 
-        file_name_list = [i["name"] for i in file_name_id_list if "name" in i]
-        file_name_list.sort()
-
-        #Creates file to help reduce load time of folders in the future
-        with open("Drive Folder List.json", "w") as Folder_list:
-            json.dump(file_name_id_list, Folder_list, indent=1)
+            #Creates file to help reduce load time of folders in the future
+            with open("Drive Folder List.json", "w") as Folder_list:
+                json.dump(file_name_id_list, Folder_list, indent=1)
 
     layout_shared_folder_select = [
         [sg.Text("Select shared folder to upload to")],
@@ -91,7 +99,7 @@ single_file_upload, yes_no_2_value):
                             file = built_drive.files().create(body=metadata, fields="id", \
                             media_body=file_path, media_mime_type="application/pdf").execute()
 
-                    sg.popup("File uploaded to {}".format(values_shared["-FOLDER LIST-"][0], title= " "))
+                    sg.popup("File uploaded to {}".format(values_shared["-FOLDER LIST-"][0]), title=" ")
                     window_shared_folder_select.close()
 
                 else:
@@ -164,7 +172,8 @@ single_file_upload, yes_no_2_value):
                 window_shared_folder_select.close()
 
             except:
-                sg.Popup("Please select a folder to upload to.", title= " ")
+                sg.Popup("Please select a folder to upload to.", title=" ")
+
 #===============================================================================
 
 def Photo_uploader(folder, file_list, creds, single_file_value):
