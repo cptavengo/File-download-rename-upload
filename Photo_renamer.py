@@ -157,11 +157,11 @@ def photo_renamer():
     #This sets up what will be on the left side of the window
     photo_column = [
         [sg.Menu(menu_def)],
-        [sg.Text("Select source folder for photo(s)")],
+        [sg.Text("Select source folder for file(s)")],
         [sg.In(enable_events=True, readonly=True, k="-FOLDER-",
         disabled_readonly_background_color=sg.theme_input_background_color()),
         sg.FolderBrowse()],
-        [sg.Text("Select photo(s) to rename:")],
+        [sg.Text("Select file(s) to rename:")],
         [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
         enable_events=True, size=(40,20), k="-FILE LIST-")],
     ]
@@ -169,7 +169,7 @@ def photo_renamer():
     #This sets up what will be on the right side of the window
     viewer_column = [
         [sg.Image(key="-IMAGE-")],
-        [sg.Text("New photo name:")],
+        [sg.Text("New file name:")],
         [sg.In(key="-INPUT-", do_not_clear=False), sg.Button("OK")],
         [sg.Button("Mass rename"), sg.Button("Delete"), sg.Button("Upload")],
     ]
@@ -285,7 +285,7 @@ def photo_renamer():
             file_list_mass = values["-FILE LIST-"]
             folder = values["-FOLDER-"]
             if file_list_mass == []:
-                sg.popup("Please select photos for mass rename first", title= " ")
+                sg.popup("Please select files for mass rename first", title= " ")
             else:
                 window["-FILE LIST-"].update(mass_renamer(folder, file_list_mass))
 
@@ -307,7 +307,7 @@ def photo_renamer():
                 sg.popup("Please select a folder", title= " ")
             else:
                 try:
-                    File_uploader.main(folder, file_list, values["-FILE LIST-"][0])
+                    File_uploader.Photo_uploader(folder, file_list, Checks.Cred_check() ,values["-FILE LIST-"][0])
                 except:
                     sg.Popup("Please select a file before uploading", title= " ")
 
@@ -345,7 +345,7 @@ def multiple_photo_folders_mover():
         [sg.In(enable_events=True, readonly=True, key="-FOLDER-",
         disabled_readonly_background_color=sg.theme_input_background_color()),
         sg.FolderBrowse()],
-        [sg.Text("Select photo(s) to move:")],
+        [sg.Text("Select file(s) to move:")],
         [sg.Listbox(values=file_list, select_mode=sg.LISTBOX_SELECT_MODE_EXTENDED,
         enable_events=True, size=(40,20),key="-FILE LIST-")],
     ]
@@ -459,7 +459,7 @@ def multiple_photo_folders_mover():
         #code block for moving files from left folder to right folder.
         elif event == "Move >>":
             if values["-FOLDER-"] == "" or values["-FOLDER_1-"] == "":
-                sg.popup("Please select a folder before moving photos!", title= " ")
+                sg.popup("Please select a folder before moving files!", title= " ")
             #moves file from left folder to right folder
             else:
                 for file in values["-FILE LIST-"]:
@@ -471,13 +471,18 @@ def multiple_photo_folders_mover():
                     folder = values["-FOLDER-"]
                     file_list = os.listdir(folder)
 
-                    for f in file_list:
-                        fnames= [
-                            f
-                            for f in file_list
-                            if os.path.isfile(os.path.join(folder,f))
-                            and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
-                        ]
+                    if file_list == []:
+                        fnames = []
+
+                    else:
+                        for f in file_list:
+                            fnames= [
+                                f
+                                for f in file_list
+                                if os.path.isfile(os.path.join(folder,f))
+                                and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
+                            ]
+
                     folder_1 = values["-FOLDER_1-"]
                     file_list_1 = os.listdir(folder_1)
 

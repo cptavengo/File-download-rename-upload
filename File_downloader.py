@@ -43,7 +43,7 @@ def main():
         sg.Radio("date range", k="-Date_range-", enable_events=True, group_id=1)],
         [collapse(section1, "-Sec1-")],
         [collapse(section2, "-Sec2-")],
-        [sg.Button("Download"), sg.Button("Photo move and/or rename")]
+        [sg.Button("Download"), sg.Button("File move and/or rename")]
     ]
 
     window = sg.Window(" ", layout)
@@ -54,26 +54,22 @@ def main():
             sys.exit()
 
         if event == "-Single_date-":
-            opened1, opened2 = False, True
-            opened1 = not opened1
-            opened2 = not opened2
+            opened1, opened2 = True, False
             window["-Sec1-"].update(visible = opened1)
             window["-Sec2-"].update(visible = opened2)
 
         if event == "-Date_range-":
-            opened1, opened2 = True, False
-            opened1 = not opened1
-            opened2 = not opened2
+            opened1, opened2 = False, True
             window["-Sec1-"].update(visible = opened1)
             window["-Sec2-"].update(visible = opened2)
 
         if event == "Download":
             if values["-FOLDER-"] == "":
-                sg.popup("Please select a folder to download to")
+                sg.popup("Please select a folder to download to", title=" ")
 
             elif values["-Single_date-"] == True:
                 if values["-Calendar-"] == "":
-                    sg.popup("Please select a date")
+                    sg.popup("Please select a date", title=" ")
 
                 else:
                     date_split = values["-Calendar-"].split("-")
@@ -85,7 +81,7 @@ def main():
                     sg.popup("Please select dates from both calendars")
 
                 elif values["-Calendar_1-"] > values["-Calendar_2-"]:
-                    sg.popup("End date and start date reversed")
+                    sg.popup("End date and start date reversed", title=" ")
 
                 else:
                     date_split_1 = values["-Calendar_1-"].split("-")
@@ -95,7 +91,7 @@ def main():
                     date_split_2[1], date_split_1[2], date_split_2[2],
                     values["-FOLDER-"])
 
-        if event == "Photo move and/or rename":
+        if event == "File move and/or rename":
             window.close()
             Photo_renamer.main()
 
@@ -146,7 +142,7 @@ def Single_date_photo(creds, year, month, day, destination_folder):
         nextPageToken = response.get("nextPageToken", "")
 
     layout_1 = [
-        [sg.Text("Downloading files now...")],
+        [sg.Text("Downloading photos now...")],
         [sg.ProgressBar(len(items), orientation="h", \
         size=(20,20), k="-PROG-")],
         [sg.Text(k="-TEXT-", size=(20,0))]
@@ -165,7 +161,7 @@ def Single_date_photo(creds, year, month, day, destination_folder):
             photo.close()
 
         window_1["-PROG-"].update(i)
-        window_1["-TEXT-"].update("{} / {} files downloaded" \
+        window_1["-TEXT-"].update("{} / {} photos downloaded" \
         .format(str(i), str(len(items))))
         i += 1
 
@@ -173,7 +169,7 @@ def Single_date_photo(creds, year, month, day, destination_folder):
             break
 
     window_1.close()
-    sg.popup("Files downloaded to {}".format(destination_folder))
+    sg.popup("Photos downloaded to {}".format(destination_folder), title=" ")
 
 #===============================================================================
 
@@ -199,7 +195,7 @@ def Date_range_photo(creds, year1, year2, month1, month2, day1, day2, destinatio
         nextPageToken = response.get("nextPageToken", "")
 
     layout_1 = [
-        [sg.Text("Downloading files now...")],
+        [sg.Text("Downloading photos now...")],
         [sg.ProgressBar(len(items), orientation="h", \
         size=(20,20), k="-PROG-")],
         [sg.Text(k="-TEXT-", size=(20,0))]
@@ -218,7 +214,7 @@ def Date_range_photo(creds, year1, year2, month1, month2, day1, day2, destinatio
             photo.close()
 
         window_1["-PROG-"].update(i)
-        window_1["-TEXT-"].update("{} / {} files downloaded" \
+        window_1["-TEXT-"].update("{} / {} photos downloaded" \
         .format(str(i), str(len(items))))
         i += 1
 
@@ -226,7 +222,7 @@ def Date_range_photo(creds, year1, year2, month1, month2, day1, day2, destinatio
             break
 
     window_1.close()
-    sg.popup("Files downloaded to {}".format(destination_folder))
+    sg.popup("Photos downloaded to {}".format(destination_folder), title=" ")
 
 #===============================================================================
 
@@ -248,7 +244,7 @@ def properties():
         if theme_event == "-THEME-":
             sg.theme(theme_values["-THEME-"][0])
             sg.popup_get_text("This is {}".format(theme_values["-THEME-"][0]),
-            title = " ")
+            title=" ")
 
         if theme_event == "OK":
             theme_window.close()

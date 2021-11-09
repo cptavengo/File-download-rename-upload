@@ -1,4 +1,4 @@
-import os.path, json, Checks, sys, re
+import os.path, json, Checks, sys, re, File_downloader
 from googleapiclient.discovery import build
 import PySimpleGUI as sg
 
@@ -6,11 +6,6 @@ if os.path.exists("Theme.json"):
     with open("Theme.json", "r") as Theme:
         windowTheme = json.load(Theme)
     sg.theme(windowTheme)
-
-#===============================================================================
-
-def main(folder, file_list, single_file_value):
-    Photo_uploader(folder, file_list, Checks.Cred_check(), single_file_value)
 
 #===============================================================================
 
@@ -180,6 +175,14 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
     #gathers necessary information to upload files into Drive
     DRIVE = build("drive", "v3", credentials=creds)
 
+    section1 = [
+        [sg.Text("**WARNING: This list may be out of date!**")]
+    ]
+
+    section2 = [
+        [sg.Text("Will take a while for large Drives to update!")]
+    ]
+
     layout = [
         [sg.Text("Single file upload (Folder uploaded too on 'No' selection)?"),
         sg.Radio("Yes", group_id=1, k="-YES-"),
@@ -187,9 +190,10 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
         [sg.Text("Share files?"), sg.Radio("Yes", group_id=2, k="-YES_1-"),
         sg.Radio("No", group_id=2, k= "-NO_1-")],
         [sg.Text("Use existing Drive folder list?"),
-        sg.Radio("Yes", group_id=3, k="-YES_2-"),
-        sg.Radio("No", group_id=3, k="-NO_2-")],
-        [sg.Text("**WARNING** This list may be out of date and will take a while for large Drives to update!")],
+        sg.Radio("Yes", group_id=3, enable_events=True, k="-YES_2-"),
+        sg.Radio("No", group_id=3, enable_events=True, k="-NO_2-")],
+        [File_downloader.collapse(section1, "-Sec1-")],
+        [File_downloader.collapse(section2, "-Sec2-")],
         [sg.Button("OK")]
     ]
 
@@ -200,11 +204,22 @@ def Photo_uploader(folder, file_list, creds, single_file_value):
         if event == "Exit" or event == sg.WIN_CLOSED:
             break
 
+        if event == "-YES_2-":
+            opened1, opened2 = True, False
+            window["-Sec1-"].update(visible=opened1)
+            window["-Sec2-"].update(visible=opened2)
+
+        if event == "-NO_2-":
+            opened1, opened2 = False, True
+            window["-Sec1-"].update(visible=opened1)
+            window["-Sec2-"].update(visible=opened2)
+
         if event == "OK":
             if values["-YES-"] == values["-NO-"] \
             or values["-YES_1-"] == values["-NO_1-"] \
             or values["-YES_2-"] == values["-NO_2-"]:
                 sg.Popup("Please make a choice for each selection", title= " ")
+
             else:
                 try:
                     window.close()
