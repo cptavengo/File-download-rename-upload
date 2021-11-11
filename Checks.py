@@ -36,8 +36,8 @@ def input_field_check(input_field):
 #when the token.json file expires, user is notified and file is deleted.
 #This makes it so that user doesn't have to start from the beginning.
 def Cred_check():
+    creds = None
     try:
-        creds = None
         SCOPES = ["https://www.googleapis.com/auth/drive", \
         "https://www.googleapis.com/auth/photoslibrary"]
 
@@ -61,5 +61,7 @@ def Cred_check():
     except:
         sg.popup("Deleting token.json. Try again.", title= " ")
         os.remove("token.json")
+
+        return creds
 
 #===============================================================================

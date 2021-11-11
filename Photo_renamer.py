@@ -172,6 +172,7 @@ def photo_renamer():
         [sg.Text("New file name:")],
         [sg.In(key="-INPUT-", do_not_clear=False), sg.Button("OK")],
         [sg.Button("Mass rename"), sg.Button("Delete"), sg.Button("Upload")],
+        [sg.Button("Rotate \u2B6E"), sg.Button("Rotate \u2B6F")]
     ]
 
     #This sets up the window with a vertical line seperating the two sections
@@ -221,7 +222,7 @@ def photo_renamer():
 
                 else:
                     image = Image.open(filename)
-                image.thumbnail((400, 400))
+                image.thumbnail((800, 800))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-IMAGE-"].update(data=bio.getvalue())
@@ -290,17 +291,34 @@ def photo_renamer():
                 window["-FILE LIST-"].update(mass_renamer(folder, file_list_mass))
 
         if event == "Delete":
-            file_list_delete = values["-FILE LIST-"]
-            for file in file_list_delete:
-                os.remove(os.path.join(folder, file))
-            file_list = os.listdir(folder)
-            fnames_delete = [
-                f
-                for f in file_list
-                if os.path.isfile(os.path.join(folder, f))
-                and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
+            layoutDelete = [
+                [sg.Text("This will permanently delete the file. Continue?")],
+                [sg.Button("Yes"), sg.Button("No")]
             ]
-            window["-FILE LIST-"].update(fnames_delete)
+
+            windowDelete = sg.Window(" ", layoutDelete)
+            while True:
+                eventDelete, valuesDelete = windowDelete.read()
+                if eventDelete == "Exit" or eventDelete == sg.WIN_CLOSED:
+                    break
+
+                if eventDelete == "Yes":
+                    windowDelete.close()
+                    file_list_delete = values["-FILE LIST-"]
+                    for file in file_list_delete:
+                        os.remove(os.path.join(folder, file))
+                    file_list = os.listdir(folder)
+                    fnames_delete = [
+                        f
+                        for f in file_list
+                        if os.path.isfile(os.path.join(folder, f))
+                        and f.lower().endswith((".png", ".jpg", ".jpeg", ".pdf"))
+                    ]
+                    window["-FILE LIST-"].update(fnames_delete)
+                    window["-IMAGE-"].update()
+
+                if eventDelete == "No":
+                    windowDelete.close()
 
         if event == "Upload":
             if values["-FOLDER-"] == "":
@@ -310,6 +328,28 @@ def photo_renamer():
                     File_uploader.Photo_uploader(folder, file_list, Checks.Cred_check() ,values["-FILE LIST-"][0])
                 except:
                     sg.Popup("Please select a file before uploading", title= " ")
+
+        if event == "Rotate \u2B6E":
+            if filename.lower().endswith((".png", ".jpg", ".jpeg")):
+                Image.open(filename).rotate(angle=270, expand=True).save(filename)
+                imageRotate = Image.open(filename)
+                imageRotate.thumbnail((800, 800))
+                bio = io.BytesIO()
+                imageRotate.save(bio, format="PNG")
+                window["-IMAGE-"].update(data=bio.getvalue())
+            else:
+                pass
+
+        if event == "Rotate \u2B6F":
+            if filename.lower().endswith((".png", ".jpg", ".jpeg")):
+                Image.open(filename).rotate(angle=90, expand=True).save(filename)
+                imageRotate = Image.open(filename)
+                imageRotate.thumbnail((800, 800))
+                bio = io.BytesIO()
+                imageRotate.save(bio, format="PNG")
+                window["-IMAGE-"].update(data=bio.getvalue())
+            else:
+                pass
 
         if event == "Download":
             window.close()
@@ -410,7 +450,7 @@ def multiple_photo_folders_mover():
                     image = Image.open("No preview available.png")
                 else:
                     image = Image.open(filename)
-                image.thumbnail((400, 400))
+                image.thumbnail((800, 800))
                 bio = io.BytesIO()
                 image.save(bio, format="PNG")
                 window["-IMAGE-"].update(data=bio.getvalue())
@@ -431,7 +471,7 @@ def multiple_photo_folders_mover():
                     image = Image.open("No preview available.png")
                 else:
                     image = Image.open(filename)
-                image.thumbnail((400, 400))
+                image.thumbnail((800, 800))
                 bio = io.BytesIO()
                 image.save(bio, format = "PNG")
                 window["-IMAGE-"].update(data=bio.getvalue())
@@ -500,6 +540,7 @@ def multiple_photo_folders_mover():
 
                 window["-FILE LIST-"].update(fnames)
                 window["-FILE_LIST_1-"].update(fnames_1)
+                window["-IMAGE-"].update()
         #checks path and proceeds to next function based on original criteria.
         elif event == "Done":
             window.close()

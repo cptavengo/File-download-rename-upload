@@ -228,30 +228,46 @@ def Date_range_photo(creds, year1, year2, month1, month2, day1, day2, destinatio
 
 #Color chooser is modified from PySimpleGUI recipe for theme viewer.
 def properties():
-    layout = [
+    layoutTheme = [
         [sg.Text("Choose a theme to apply to all elements and windows")],
         [sg.Listbox(values=sg.theme_list(), size=(20,12), k= "-THEME-",
         enable_events=True)], [sg.Button("OK")]
     ]
 
-    theme_window = sg.Window(" ", layout)
+    windowTheme = sg.Window(" ", layoutTheme)
 
     while True:
-        theme_event, theme_values = theme_window.read()
-        if theme_event == "Exit" or theme_event == sg.WIN_CLOSED:
+        eventTheme, valuesTheme = windowTheme.read()
+        if eventTheme == "Exit" or eventTheme == sg.WIN_CLOSED:
+            if os.path.exists("Theme.json"):
+                with open("Theme.json", "r") as Theme:
+                    windowTheme = json.load(Theme)
+                sg.theme(windowTheme)
             break
 
-        if theme_event == "-THEME-":
-            sg.theme(theme_values["-THEME-"][0])
-            sg.popup_get_text("This is {}".format(theme_values["-THEME-"][0]),
-            title=" ")
+        if eventTheme == "-THEME-":
+            sg.theme(valuesTheme["-THEME-"][0])
+            layoutTest = [
+                [sg.Text("This is {}".format(valuesTheme["-THEME-"][0]))],
+                [sg.In()],
+                [sg.Button("OK")]
+            ]
 
-        if theme_event == "OK":
-            theme_window.close()
+            windowTest = sg.Window(" ", layoutTest)
+            while True:
+                eventTest, valuesTest = windowTest.read()
+                if eventTest == "Exit" or eventTest == sg.WIN_CLOSED:
+                    break
+
+                if eventTest == "OK":
+                    windowTest.close()
+
+        if eventTheme == "OK":
+            windowTheme.close()
             sg.popup("Theme changed to {}."
-            .format(theme_values["-THEME-"][0]), title=" ")
+            .format(valuesTheme["-THEME-"][0]), title=" ")
             with open("Theme.json", "w") as new_theme:
-                json.dump(theme_values["-THEME-"][0], new_theme)
+                json.dump(valuesTheme["-THEME-"][0], new_theme)
 
 #===============================================================================
 if __name__ == "__main__":
