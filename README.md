@@ -1,6 +1,6 @@
 <h1> Introduction, state of project, possible updates </h1>
 
-This repository contains all my file manipulation Python files. The program downloads photos from Google Photos, manipulates the file names, add folders, move to new folders, and then uploads files to Google Drive. This primarily was a coding practice for me. The major restriction that I had in place for myself is that the program(s) use PySimpleGUI to view photos, file names, and folder names. As of 11/7/2021, the program is in a satisfactory state, as the program does all the things I wanted it to do when I started. There are a few file type additions I will add at some point (.doc/.docx and .xls/.xlsx are the ones that spring to mind) and possibly add a photo rotation tool. The tool even has customization options for changing font/background colors, and will remember the settings for future runs!
+This repository contains all my file manipulation Python files. The program downloads photos from Google Photos, manipulates file names, can add folders, move files to new folders, and then upload files to Google Drive. This primarily was a coding practice for me. The major restriction that I had in place for myself was that the program(s) use PySimpleGUI to view photos, file names, and folder names. As of 11/7/2021, the program is in a satisfactory state, as the program does all the things I wanted it to do when I started. There are a few file type additions I will add at some point (.doc/.docx and .xls/.xlsx are the ones that spring to mind). The tool even has customization options for changing font/background colors, and will remember the settings for future runs!
 
 <h1> Program in action </h1>
 
@@ -65,21 +65,39 @@ The window requires the user to input a source folder and a destination folder. 
 
 Renaming files is accomplished in this window:
 
-![File renamer example](https://user-images.githubusercontent.com/81875107/140842096-3001535c-a80b-42fe-a8ff-00f545f547ed.png)
+![File renamer example](https://user-images.githubusercontent.com/81875107/141379711-8c847b92-6f75-4acf-8ff0-1bfc481a427b.png)
 
 which updates the file list after a name has been entered:
 
-![File renamed](https://user-images.githubusercontent.com/81875107/140842134-283a6237-b229-437f-8de1-97ca6f179c7e.png)
+![File renamed](https://user-images.githubusercontent.com/81875107/141379754-3e92bd25-78a8-4308-a1b0-d3d22378b172.png)
 
 Multiple files can be updated at once using the __Mass rename__ button:
 
-![Mass rename example](https://user-images.githubusercontent.com/81875107/140842169-3fe27bc8-282e-481c-bd92-9c1fec54dc32.png)
+![Mass rename example](https://user-images.githubusercontent.com/81875107/141379828-c671e280-55a3-4142-bc16-75ad73268657.png)
 
 which results in files following a format like below:
 
-![After mass rename](https://user-images.githubusercontent.com/81875107/140842189-5e76f1c2-0edf-4f06-af5c-bc49246ed891.png)
+![After mass rename](https://user-images.githubusercontent.com/81875107/141379863-2f62b2a0-cb37-4f63-8e3b-dd655812634e.png)
 
-The delete button does exactly what it says, it deletes the file from the local host. It does not move it to a recycle area, it is gone. Upload moves on to the last major part of the program.
+The delete button does exactly what it says, it deletes the file from the local host. It does not move it to a recycle area, it is gone. Delete has a confirmation before the file is deleted, as shown below:
+
+![Delete confirmation](https://user-images.githubusercontent.com/81875107/141380009-f1ebb0af-2098-4d2a-aa0e-d8fe20607aef.png)
+
+Which results in the file being removed and the viewer being cleared:
+
+![File deleted](https://user-images.githubusercontent.com/81875107/141380099-3ea2decf-6fc9-4a22-af36-7ccd7a05351e.png)
+
+The two rotate buttons, Rotate &#x2B6E; and Rotate &#x2B6F;, rotate the image clockwise and counterclockwise 90&#x00B0; in the corresponding direction.
+
+Rotate &#x2B6E;:
+
+![Rotate 90 clockwise](https://user-images.githubusercontent.com/81875107/141381578-8b1a6904-a891-4989-97a7-1d6f3f442c82.png)
+
+Rotate &#x2B6F;:
+
+![Rotate 90 counterclockwise](https://user-images.githubusercontent.com/81875107/141381598-74be72ed-9f83-4cce-a658-45d5e78c6e65.png)
+
+Upload moves on to the last major part of the program.
 
 <a name ="uploadingfiles"> </a>
 
@@ -87,7 +105,7 @@ The delete button does exactly what it says, it deletes the file from the local 
 
 The program prompts for user input on several areas for upload. Shared flags the files to be visible by other collaborators for shared Drives, and not sharing causes the file(s) to be uploaded to the user's Drive instead. Note that the file renamer portion stays open while the upload program is running so that the user can switch folders to upload more files, if desired.
 
-![File uploader window](https://user-images.githubusercontent.com/81875107/140842228-e3907fc6-b797-48f1-aec0-e45aa1983180.png)
+![File uploader window](https://user-images.githubusercontent.com/81875107/141379918-53a75328-dee8-46dd-ae42-97f0742f7476.png)
 
 Below shows the windows opened while uploading files. The background window is the list of Drive folders the user can upload to. This list can be shortened to include commonly used folders by editting the .json file that is created when gathering all the folders the first time. Otherwise, the program just uses the full list to help reduce the amount of time it takes to look for Drive folders.
 
@@ -113,9 +131,9 @@ Here is what pops up when the __properties__ option is selected:
 
 ![Properties option](https://user-images.githubusercontent.com/81875107/140842277-1e1712f9-e695-4fab-87da-9440e3478692.png)
 
-A preview window opens showing what the option will look like (OK, cancel, and X all do the same thing; close the window):
+A preview window opens showing what the options for an input field, a button, and the background will look like:
 
-![Properties option showing potential change](https://user-images.githubusercontent.com/81875107/140842301-ba1562b7-eaa5-47d9-b859-261b541095e5.png)
+![Properties option showing potential change](https://user-images.githubusercontent.com/81875107/141378935-0a5b45f0-0721-4b27-93c7-c0cae8c7bbda.png)
 
 Selecting __OK__ causes the following popup to appear, alerting the user to the theme chosen:
 
