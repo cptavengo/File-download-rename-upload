@@ -11,9 +11,9 @@ This repository contains all my file manipulation Python files. The program down
 5. [Uploading files](#uploadingfiles)
 6. [File menu](#menu)
 
-Here is an example of the different parts of the program from start to finish. 
+Here is an example of the different parts of the program from start to finish.
 
-One thing to note, since this program interacts with the Google Photos and Drive APIs, the program must be added to the Google Developer dashboard and the Credentials.json downloaded to the folder containing the program. This is how the program creates and reads the tokens needed to allow access to Photos and Drive. The user will be prompted to reallow the program access to Photos and Drive periodically to refresh the tokens.
+This app interacts with a user's Google Photos and Drive, and as such, will prompt for an account sign in when accessing either the upload or download functions. After one week, the app will request permission again; this is normal as the app is unverified from Google, so tokens only last for 1 week.
 
 <a name="Photodownload"> </a>
 
@@ -21,19 +21,19 @@ One thing to note, since this program interacts with the Google Photos and Drive
 
 The program begins in this first window:
 
-![Beginning window](https://user-images.githubusercontent.com/81875107/140841843-9505e51b-ee49-4596-a751-2324c7568e03.png)
+![Beginning window](https://user-images.githubusercontent.com/81875107/142804179-27ecc156-bc83-4ba1-a020-d9287b1ae7f5.png)
 
 where the user is prompted to enter a folder on the local host to download photos to, and to select from either a single date:
 
-![Single date selection](https://user-images.githubusercontent.com/81875107/140841881-926d7c9e-76fb-4cda-a8d5-c7bd84570cbb.png)
+![Single date selection](https://user-images.githubusercontent.com/81875107/142804204-e7ab24d6-d2d9-4c85-be91-874692cdd404.png)
 
 or a date range, where each of the buttons opens a calendar as shown above for each prompt:
 
-![Date range selection](https://user-images.githubusercontent.com/81875107/140841914-cdd97e36-a95e-4534-a6ad-033fdceb8af2.png)
+![Date range selection](https://user-images.githubusercontent.com/81875107/142804241-c49cfed9-0621-4dab-88c8-01c5b3c100ff.png)
 
 After the user has selected a folder and date(s) the program calls the Google Photos API with the date filter input by the user for all photos in the range. The program then updates the user by showing a progress window for how many photos will be downloaded and how many have currently been downloaded:
 
-![Download with a progress bar](https://user-images.githubusercontent.com/81875107/140841939-7b4a94f4-4306-4e53-a3f0-3fb97ac37e39.png)
+![Download with a progress bar](https://user-images.githubusercontent.com/81875107/142804265-3eae0262-fd91-4216-95dc-b9d78af56c3a.png)
 
 <a name="newfoldercreation"> </a>
 
@@ -41,11 +41,11 @@ After the user has selected a folder and date(s) the program calls the Google Ph
 
 After the user is done using the download tool and selects the correct button, the user is prompted for new inputs:
 
-![Program flow after download](https://user-images.githubusercontent.com/81875107/140841981-e8a22d53-4ff9-4204-af45-7f3145925b9e.png)
+![Program flow after download](https://user-images.githubusercontent.com/81875107/142804315-ad02df1f-32ef-432b-ae48-5d4780b6932b.png)
 
 Selecting yes for the first radio brings the user to a window as shown below. The user is asked for a location to make new folders, and how many should be created in the new location. If an entry of 0 is received, the program will continue on the flow without prompting to create new folders.
 
-![Folder creation option](https://user-images.githubusercontent.com/81875107/140842019-f1b2d423-1967-416d-ba87-78ef0c568a00.png)
+![Folder creation option](https://user-images.githubusercontent.com/81875107/142804336-6560a890-d511-4acd-b875-68a67999fd20.png)
 
 <a name="movingfiles"> </a>
 
@@ -53,11 +53,11 @@ Selecting yes for the first radio brings the user to a window as shown below. Th
 
 Here is the window for moving files from one folder to another (for example, moving files from a USB drive to a storage folder on the user's PC):
 
-![File mover example](https://user-images.githubusercontent.com/81875107/140842053-c529d53a-f319-4a85-a816-e64ad939a7d0.png)
+![File mover example](https://user-images.githubusercontent.com/81875107/142804370-90f38d9b-fc4d-4fa2-a4f4-d799df51c948.png)
 
-The window requires the user to input a source folder and a destination folder. Then the .jpg, .png, .jpeg, and .pdf files are shown in each of the folders. The user can select individual or multiple (using CTRL if needed) files to move to the destination folder. Image files are shown in the middle, while .pdf shows a generic image file. Clicking __Move >>__ copies the file to the destination folder and then deletes it from the first folder.
+The window requires the user to input a source folder and a destination folder. Then the .jpg, .png, .jpeg, and .pdf files are shown in each of the folders. The user can select individual or multiple (using CTRL if needed) files to move to the destination folder. Image files are shown in the middle, while .pdf shows a generic image file. Clicking __Move &#x2192;__ copies the file to the destination folder and then deletes it from the first folder.
 
-![File mover example 2](https://user-images.githubusercontent.com/81875107/140842070-71aee877-8e46-490e-9ae2-1e9b7426213a.png)
+![File mover example 2](https://user-images.githubusercontent.com/81875107/142804390-3ce9bc38-4243-4974-8d76-e922041b875f.png)
 
 <a name="renamingfiles"> </a>
 
@@ -65,37 +65,37 @@ The window requires the user to input a source folder and a destination folder. 
 
 Renaming files is accomplished in this window:
 
-![File renamer example](https://user-images.githubusercontent.com/81875107/141379711-8c847b92-6f75-4acf-8ff0-1bfc481a427b.png)
+![File renamer example](https://user-images.githubusercontent.com/81875107/142804414-2a33aa0c-d132-49c1-a68a-6ac3020710de.png)
 
 which updates the file list after a name has been entered:
 
-![File renamed](https://user-images.githubusercontent.com/81875107/141379754-3e92bd25-78a8-4308-a1b0-d3d22378b172.png)
+![File renamed](https://user-images.githubusercontent.com/81875107/142804436-b47d320a-080c-4059-bd1a-927070faa17c.png)
 
 Multiple files can be updated at once using the __Mass rename__ button:
 
-![Mass rename example](https://user-images.githubusercontent.com/81875107/141379828-c671e280-55a3-4142-bc16-75ad73268657.png)
+![Mass rename example](https://user-images.githubusercontent.com/81875107/142804456-ed571d02-9fa0-4636-9dae-f17214a8ea2e.png)
 
 which results in files following a format like below:
 
-![After mass rename](https://user-images.githubusercontent.com/81875107/141379863-2f62b2a0-cb37-4f63-8e3b-dd655812634e.png)
+![After mass rename](https://user-images.githubusercontent.com/81875107/142804479-b49941c2-cae5-4ca1-be3f-718301ec1c75.png)
 
 The delete button does exactly what it says, it deletes the file from the local host. It does not move it to a recycle area, it is gone. Delete has a confirmation before the file is deleted, as shown below:
 
-![Delete confirmation](https://user-images.githubusercontent.com/81875107/141380009-f1ebb0af-2098-4d2a-aa0e-d8fe20607aef.png)
+![Delete confirmation](https://user-images.githubusercontent.com/81875107/142804507-12466e96-9c1d-4ef1-8eb7-afd16662d5da.png)
 
 Which results in the file being removed and the viewer being cleared:
 
-![File deleted](https://user-images.githubusercontent.com/81875107/141380099-3ea2decf-6fc9-4a22-af36-7ccd7a05351e.png)
+![File deleted](https://user-images.githubusercontent.com/81875107/142804525-d41e772d-e53c-4fa2-9cc5-6ea03a42a82b.png)
 
 The two rotate buttons, Rotate &#x2B6E; and Rotate &#x2B6F;, rotate the image clockwise and counterclockwise 90&#x00B0; in the corresponding direction.
 
 Rotate &#x2B6E;:
 
-![Rotate 90 clockwise](https://user-images.githubusercontent.com/81875107/141381578-8b1a6904-a891-4989-97a7-1d6f3f442c82.png)
+![Rotate 90 clockwise](https://user-images.githubusercontent.com/81875107/142804549-0ef172e8-cc6f-423d-8f4c-38cd747a32f1.png)
 
 Rotate &#x2B6F;:
 
-![Rotate 90 counterclockwise](https://user-images.githubusercontent.com/81875107/141381598-74be72ed-9f83-4cce-a658-45d5e78c6e65.png)
+![Rotate 90 counterclockwise](https://user-images.githubusercontent.com/81875107/142804564-aeac4716-d500-4473-8197-d0de08776ede.png)
 
 Upload moves on to the last major part of the program.
 
@@ -105,11 +105,11 @@ Upload moves on to the last major part of the program.
 
 The program prompts for user input on several areas for upload. Shared flags the files to be visible by other collaborators for shared Drives, and not sharing causes the file(s) to be uploaded to the user's Drive instead. Note that the file renamer portion stays open while the upload program is running so that the user can switch folders to upload more files, if desired.
 
-![File uploader window](https://user-images.githubusercontent.com/81875107/141379918-53a75328-dee8-46dd-ae42-97f0742f7476.png)
+![File uploader window](https://user-images.githubusercontent.com/81875107/142804593-8bd06b8e-7a8b-4ed2-ab87-589468f1d864.png)
 
 Below shows the windows opened while uploading files. The background window is the list of Drive folders the user can upload to. This list can be shortened to include commonly used folders by editting the .json file that is created when gathering all the folders the first time. Otherwise, the program just uses the full list to help reduce the amount of time it takes to look for Drive folders.
 
-![File uploader windows](https://user-images.githubusercontent.com/81875107/140842246-18b5e484-3b84-4a0a-8486-20f349febc74.png)
+![File uploader windows](https://user-images.githubusercontent.com/81875107/142804621-fffd1d44-5214-4dfc-969c-31985d3ec9e8.png)
 
 <a name="menu"> </a>
 
@@ -117,32 +117,48 @@ Below shows the windows opened while uploading files. The background window is t
 
 <h3> Menu </h3>
 
-The menu has similar options in each part of the program to allow the user to either skip ahead in the program in case certain steps aren't needed or go back to other parts in case the user later decided something else was needed. 
+The menu has similar options in each part of the program to allow the user to either skip ahead in the program in case certain steps aren't needed or go back to other parts in case the user later decided something else was needed.
 
 This is an example list for the download program:
 
-![Menu example](https://user-images.githubusercontent.com/81875107/140842262-53baa0c0-1455-4b21-96c5-43cfb9b8dcec.png)
+![Menu example](https://user-images.githubusercontent.com/81875107/142804639-8e595308-83b7-430f-a297-1ed7eabbafed.png)
 
 <h3> Properties </h3>
 
-Properties contains only one function (more may be added in the future). It allows the theme for all windows to be changed using the preset themes available in PySimpleGUI. This will change the background color of windows, color of text and background for input fields, and button colors.
+Properties contains two different functions (more may be added in the future). __Themes__ allows the theme for all windows to be changed using the preset themes available in PySimpleGUI. This will change the background color of windows, color of text and background for input fields, and button colors. The second option, __Image Size__, changes the size of the images shown in the file mover and the file renamer. Currently, there are only 2 options, but a custom scaler might be added in the future. The Image method for a Window in PySimpleGUI can be a bit finicky with what it considers valid "sizes" for an input; it'll accept custom measurements, but it seems to prefer certain values over others regardless of input.
 
-Here is what pops up when the __properties__ option is selected:
+<h4> Themes </h4>
+Here is what pops up when the <strong>Themes</strong> option is selected:
 
-![Properties option](https://user-images.githubusercontent.com/81875107/140842277-1e1712f9-e695-4fab-87da-9440e3478692.png)
+![Themes option](https://user-images.githubusercontent.com/81875107/142804796-68b98e2a-5d52-4199-9e2f-777a05ab7a87.png)
 
 A preview window opens showing what the options for an input field, a button, and the background will look like:
 
-![Properties option showing potential change](https://user-images.githubusercontent.com/81875107/141378935-0a5b45f0-0721-4b27-93c7-c0cae8c7bbda.png)
+![Themes option showing potential change](https://user-images.githubusercontent.com/81875107/142804809-f45292fd-b436-4ff3-89c8-4dcd4220977e.png)
 
 Selecting __OK__ causes the following popup to appear, alerting the user to the theme chosen:
 
-![Theme changed](https://user-images.githubusercontent.com/81875107/140842324-6fb54fc0-5b93-4777-a9e7-57feb9ed01e0.png)
+![Theme changed](https://user-images.githubusercontent.com/81875107/142804821-60b33bb8-277a-4597-af96-91b4f6201019.png)
 
 Which then refreshes the current window that properties was selected from, showing the new theme:
 
-![Window after theme change](https://user-images.githubusercontent.com/81875107/140842339-d96dd395-7c6f-4748-8f8d-b90a87fb26e7.png)
+![Window after theme change](https://user-images.githubusercontent.com/81875107/142804846-0cbc2956-d7da-45d5-9e6e-0129b48d452d.png)
 
 This theme is written into a .json file that the program will read from at the start and remember for future iterations of the program!
+
+<h4> Image size </h4>
+Here is the image size popup:
+
+![Size option selected](https://user-images.githubusercontent.com/81875107/142805351-155fe542-6b04-42ab-aa5f-e80fe3d701c9.png)
+
+Small size results in images appearing in the viewer as this size:
+
+![small size default](https://user-images.githubusercontent.com/81875107/142806745-e31b432b-fe83-4ab1-87c9-56d3c30f94da.png)
+
+And large shows up as:
+
+![large size](https://user-images.githubusercontent.com/81875107/142806762-da66a951-b08c-40c4-b009-687909058c79.png)
+
+Small is the default size, and for the Image method this is equivalent to size = (400, 400). Large is double this at (800, 800). Either option is saved to the same .json as the theme, so future runs will remember any choices made.
 
 This concludes the walkthrough for this program!

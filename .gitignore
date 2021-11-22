@@ -53,9 +53,9 @@ Mkfile.old
 dkms.conf
 
 __pycache__
-credentials.json
 Drive Folder List.json
 token.json
 Permissions.json
-Theme.json
+Properties.json
 GUI Example Photos
+File DRU application
