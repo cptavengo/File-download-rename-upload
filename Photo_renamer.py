@@ -144,9 +144,6 @@ def mass_renamer(folder, file_list):
                     #name in use, try again
                     if new_file in os.listdir(folder):
                         sg.popup("This name is already in use", title=" ", icon=icon)
-                    #general catch in case program runs into unexpected scenario
-                    else:
-                        sg.popup("Something screwed up", title=" ", icon=icon)
 
 #===============================================================================
 
@@ -294,45 +291,9 @@ def photo_renamer():
 
         #button event for deletion
         if event == "Delete":
-            if values["-FOLDER-"] == "":
-                sg.popup("Select a folder first", title=" ", icon=icon)
-
-            elif values["-FILE_LIST-"] == []:
-                sg.popup("Select a file first", title=" ", icon=icon)
-
-            else:
-                #This initiates a new window that asks for confirmation before deletion
-                layoutDelete = [
-                    [sg.Text("This will permanently delete the file. Continue?")],
-                    [sg.Button("Yes"), sg.Button("No")]
-                ]
-
-                windowDelete = sg.Window(" ", layoutDelete, icon=icon)
-                while True:
-                    eventDelete, valuesDelete = windowDelete.read()
-                    if eventDelete == "Exit" or eventDelete == sg.WIN_CLOSED:
-                        break
-
-                    #Yes button push deletes the file and then updates file list
-                    #and window to no longer show deleted file
-                    if eventDelete == "Yes":
-                        windowDelete.close()
-                        file_list_delete = values["-FILE_LIST-"]
-
-                        for file in file_list_delete:
-                            os.remove(os.path.join(values["-FOLDER-"], file))
-
-                        fnames_delete = filenames(values["-FOLDER-"],
-                        os.listdir(values["-FOLDER-"]))
-
-                        if fnames_delete is None:
-                            fnames_delete = []
-
-                        window["-FILE_LIST-"].update(fnames_delete)
-                        window["-IMAGE-"].update()
-
-                    if eventDelete == "No":
-                        windowDelete.close()
+            window["-FILE_LIST-"].update(delete(values["-FOLDER-"],
+            values["-FILE_LIST-"]))
+            window["-IMAGE-"].update()
 
         #button event for uploading; popups are for
         if event == "Upload":
@@ -659,12 +620,20 @@ def multiple_photo_folders(YES_1_check_value):
                             [sg.Button("OK")],
                         ]
 
-                        window_1 = sg.Window(" ", layout_1, icon=icon)
+                        #enable_close_attempted_event is added to break apart WIN_CLOSED
+                        #event referenced by window.close() and an exit when 'x' is clicked
+                        window_1 = sg.Window(" ", layout_1,
+                        enable_close_attempted_event=True, icon=icon)
                         #creates each folder in a separate window, one at a time
                         while True:
                             event_1, values_1 = window_1.read()
-                            #sys.exit() is to immediately close program instead of window only
+
+                            #break event to ensure loop still continues
                             if event_1 == "Exit" or event_1 == sg.WIN_CLOSED:
+                                break
+
+                            #sys.exit() is to immediately close program instead of window only
+                            if event_1 == sg.WINDOW_CLOSE_ATTEMPTED_EVENT:
                                 sys.exit()
 
                             if event_1 == "OK":
@@ -674,8 +643,7 @@ def multiple_photo_folders(YES_1_check_value):
                                 else:
                                     #checks file list to make sure folder
                                     #name isn't already in use.
-                                    folder = values["-FOLDER-"]
-                                    file_list = os.listdir(folder)
+                                    file_list = os.listdir(values["-FOLDER-"])
                                     for i, file in enumerate(file_list):
                                         file_list[i] = file_list[i].lower()
 
@@ -685,7 +653,7 @@ def multiple_photo_folders(YES_1_check_value):
 
                                     else:
                                         window_1.close()
-                                        os.mkdir(folder + "/" + values_1["-IN_1-"])
+                                        os.mkdir(values["-FOLDER-"] + "/" + values_1["-IN_1-"])
 
                     #checks original path and continues program based on that
                     if YES_1_check_value is True:
@@ -726,3 +694,44 @@ def filenames(folder, file_list):
     ]
 
     return list_filenames
+
+#===============================================================================
+
+def delete(folder, fileList):
+    if folder == "":
+        sg.popup("Select a folder first", title=" ", icon=icon)
+
+    elif fileList == []:
+        sg.popup("Select a file first", title=" ", icon=icon)
+
+    else:
+        #This initiates a new window that asks for confirmation before deletion
+        layoutDelete = [
+            [sg.Text("This will permanently delete the file. Continue?")],
+            [sg.Button("Yes"), sg.Button("No")]
+        ]
+
+        windowDelete = sg.Window(" ", layoutDelete, icon=icon)
+        while True:
+            eventDelete, valuesDelete = windowDelete.read()
+            if eventDelete == "Exit" or eventDelete == sg.WIN_CLOSED:
+                break
+
+            #Yes button push deletes the file and then updates file list
+            #and window to no longer show deleted file
+            if eventDelete == "Yes":
+                windowDelete.close()
+
+                for file in fileList:
+                    os.remove(os.path.join(folder, file))
+
+                fnamesDelete = filenames(folder,
+                os.listdir(folder))
+
+                if fnamesDelete is None:
+                    fnamesDelete = []
+
+                return fnamesDelete
+
+            else:
+                windowDelete.close()
